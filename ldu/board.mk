@@ -1,0 +1,9 @@
+BUILD_TARGET = ldu
+BOARD_NAME = ldu
+BOARD_NAME_UPPER = LDU
+BOARD_ARCHITECTURE = F4
+
+COMMON_LIB_SRC :=  
+CUBE_MAKEFILE_PATH = $(BUILD_TARGET)/Cube-files/
+
+include common/tail.mk
