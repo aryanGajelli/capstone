@@ -12,10 +12,10 @@ EXTRA_LDFLAGS = -Wl,--no-warn-rwx-segments -u _printf_float -u _scanf_float
 
 ldu:
 	@mkdir -p $(BIN_DIR)
-	@make -C ldu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)"
+	@make -C ldu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" --no-print-directory
 pcu:
-	mkdir -p $(BIN_DIR)
-	make -C pcu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)"
+	@mkdir -p $(BIN_DIR)
+	@make -C pcu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" --no-print-directory
 
 clean:
 	rm -rf $(BIN_DIR)
