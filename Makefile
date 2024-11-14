@@ -1,20 +1,22 @@
 CUSTOM_COMMANDS = all clean
-BOARDS = ldu
+BOARDS = ldu pcu
 
 .PHONY: $(CUSTOM_COMMANDS) $(BOARDS) 
 
-all: bmu dcu pdu vcu wsb cellTester
- 
-beaglebone:;
-	make -C beaglebone/os/
+all: ldu pcu
 
-dashboard:;
-	make -C beaglebone/app/wfe/dashboard/
+BIN_DIR = Bin
+BUILD_DIR = ../../$(BIN_DIR)
 
-include cellTester/board.mk
-include bmu/board.mk
-include dcu/board.mk
-include pdu/board.mk
-include vcu/board.mk
-#include wsb/board.mk
-include 2024_wsb/board.mk # change the name to wsb once firmware bringup is complete
+EXTRA_LDFLAGS = -Wl,--no-warn-rwx-segments -u _printf_float -u _scanf_float
+
+ldu:
+	@mkdir -p $(BIN_DIR)
+	@make -C ldu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)"
+pcu:
+	mkdir -p $(BIN_DIR)
+	make -C pcu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)"
+
+clean:
+	rm -rf $(BIN_DIR)
+

@@ -13,23 +13,32 @@
 ######################################
 # target
 ######################################
-TARGET = Cube-files
+TARGET ?= ldu
 
 
 ######################################
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+DEBUG ?= 0
 # optimization
 OPT = -Og
 
+
+
+#######################################
+# custom build vars
+#######################################
+BUILD_DIR ?= Bin
+EXTRA_C_SRC ?=
+EXTRA_C_INC ?=
+EXTRA_LDFLAGS ?=
 
 #######################################
 # paths
 #######################################
 # Build path
-BUILD_DIR = build
+# BUILD_DIR = build
 
 ######################################
 # source
@@ -61,6 +70,8 @@ Core/Src/system_stm32f4xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c  
 
+C_SOURCES += $(EXTRA_C_SRC)
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f446xx.s
@@ -76,15 +87,15 @@ PREFIX = arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
-AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
-CP = $(GCC_PATH)/$(PREFIX)objcopy
-SZ = $(GCC_PATH)/$(PREFIX)size
+CC = @$(GCC_PATH)/$(PREFIX)gcc
+AS = @$(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
+CP = @$(GCC_PATH)/$(PREFIX)objcopy
+SZ = @$(GCC_PATH)/$(PREFIX)size
 else
-CC = $(PREFIX)gcc
-AS = $(PREFIX)gcc -x assembler-with-cpp
-CP = $(PREFIX)objcopy
-SZ = $(PREFIX)size
+CC = @$(PREFIX)gcc
+AS = @$(PREFIX)gcc -x assembler-with-cpp
+CP = @$(PREFIX)objcopy
+SZ = @$(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -125,6 +136,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include
 
+C_INCLUDES += $(EXTRA_C_INC)
+
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -149,7 +162,7 @@ LDSCRIPT = STM32F446RETx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections $(EXTRA_LDFLAGS)
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
