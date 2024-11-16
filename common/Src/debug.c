@@ -8,12 +8,14 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
+char buffer[DEBUG_PRINT_STRING_SIZE];
 // UART PRINT
 void uprintf(const char *format, ...) {
-    char buffer[DEBUG_PRINT_STRING_SIZE];
+    buffer[DEBUG_PRINT_STRING_SIZE - 1] = '\0';
     va_list args;
     va_start(args, format);
     vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)buffer, strnlen(buffer, DEBUG_PRINT_STRING_SIZE), UART_TIMEOUT_MS);
+    size_t len = strlen(buffer);
+    HAL_UART_Transmit_DMA(&DEBUG_UART_HANDLE, (uint8_t *)buffer, len);
 }
