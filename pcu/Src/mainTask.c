@@ -2,6 +2,8 @@
 #include "debug.h"
 #include "main.h"
 #include "task.h"
+#include "bsp.h"
+#include "encoder.h"
 
 #define MAIN_TASK_PERIOD_MS 500
 void mainTask(void const* argument) {
@@ -10,5 +12,6 @@ void mainTask(void const* argument) {
     while (1) {
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MAIN_TASK_PERIOD_MS));
+        uprintf("%ld\n", encoderCount());
     }
 }

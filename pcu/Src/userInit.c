@@ -1,16 +1,17 @@
 #include "userInit.h"
 #include "debug.h"
+#include "encoder.h"
 #include "bsp.h"
 
 void userInit(void) {
    
     if (debugInit() != HAL_OK) {
-        Error_Handler();
+        handleError();
     }
     
-    // if (encodersInit() != HAL_OK) {
-    //     Error_Handler();
-    // }
+    if (encodersInit() != HAL_OK) {
+        handleError();
+    }
 
     printf("----------------------------------\nFinished User Init\n");
     
