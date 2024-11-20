@@ -11,9 +11,7 @@ void userInit(void) {
     // if (encodersInit() != HAL_OK) {
     //     Error_Handler();
     // }
-
     printf("----------------------------------\nFinished User Init\n");
-    
 }
 
 // void vApplicationStackOverflowHook( TaskHandle_t xTask,
