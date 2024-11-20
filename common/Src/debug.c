@@ -6,29 +6,39 @@
 #include <string.h>
 
 #include "bsp.h"
-#include "queue.h"
 #include "stm32f4xx_hal.h"
+
+#ifdef USE_FREERTOS
+#include "FreeRTOS.h"
+#include "queue.h"
+#endif
 
 // Note: printf should only be used for printing before RTOS starts, and error
 // cases where rtos has probably failed. (If used after rtos starts, it may
 // cause errors in calling non-reentrant hal functions)
 int _write(int file, char *data, int len) {
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)data, len, UART_PRINT_TIMEOUT);
+    HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)data, len, DEBUG_UART_PRINT_TIMEOUT);
     return len;
 }
 
+#ifdef USE_FREERTOS
 QueueHandle_t printQueue;
+#endif
+
 char isDebugInitialized = 0;
 HAL_StatusTypeDef debugInit(void) {
     isDebugInitialized = 1;
+#ifdef USE_FREERTOS
     printQueue = xQueueCreate(PRINT_QUEUE_LENGTH, PRINT_QUEUE_STRING_SIZE);
     if (!printQueue) {
         return HAL_ERROR;
     }
+#endif
 
     return HAL_OK;
 }
 
+#ifdef USE_FREERTOS
 void printTask(void *pvParameters) {
     char buffer[PRINT_QUEUE_STRING_SIZE] = {0};
 
@@ -40,6 +50,7 @@ void printTask(void *pvParameters) {
         }
     }
 }
+#endif
 
 // Reset the debug uart
 // This is done to clear the UART in case it is being used by the debug task,
@@ -65,21 +76,21 @@ void _handleError(char *file, int line) {
     backtrace_t backtrace[BACKTRACE_SIZE];
     backtrace_unwind(backtrace, BACKTRACE_SIZE);
     char backtraceString[20];
-    
+
+#ifdef USE_FREERTOS
     taskDISABLE_INTERRUPTS();
+#endif
 
-    while (resetUART() != HAL_OK)
-        ;
-    
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)errorStringFile), strlen(errorStringFile), 1000);
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)file), strlen(file), 1000);
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)errorStringLine), strlen(errorStringLine), 1000);
+    while (resetUART() != HAL_OK);
+
+    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)errorStringFile), strlen(errorStringFile), DEBUG_UART_PRINT_TIMEOUT);
+    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)file), strlen(file), DEBUG_UART_PRINT_TIMEOUT);
+    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)errorStringLine), strlen(errorStringLine), DEBUG_UART_PRINT_TIMEOUT);
     snprintf(lineNumberString, sizeof(lineNumberString), "%d", line);
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)lineNumberString), strlen(lineNumberString), 1000);
+    HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)lineNumberString), strlen(lineNumberString), DEBUG_UART_PRINT_TIMEOUT);
 
-    for (int i = 0; i < BACKTRACE_SIZE; ++i){
-		sprintf(backtraceString, "\n%p - %s@ %p", backtrace[i].function, backtrace[i].name, backtrace[i].address);
-        HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)backtraceString), strlen(backtraceString), 1000);
+    for (int i = 0; i < BACKTRACE_SIZE; ++i) {
+        sprintf(backtraceString, "\n%p - %s@ %p", backtrace[i].function, backtrace[i].name, backtrace[i].address);
+        HAL_UART_Transmit(&DEBUG_UART_HANDLE, ((uint8_t *)backtraceString), strlen(backtraceString), DEBUG_UART_PRINT_TIMEOUT);
     }
-
 }

@@ -73,7 +73,7 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define USE_FREERTOS
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
