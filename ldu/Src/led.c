@@ -1,12 +1,13 @@
 #include "led.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "delay_us.h"
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
-pixel frame[LED_HEIGHT][LED_WIDTH];
+volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 
 // Control pins
 #define clk_en() HAL_GPIO_WritePin(MAT_CLK_GPIO_Port, MAT_CLK_Pin, GPIO_PIN_RESET)  // Active low
@@ -74,7 +75,7 @@ void selectRow(uint8_t row) {
     HAL_GPIO_WritePin(MAT_A_GPIO_Port, MAT_A_Pin, row & 0x01);
     HAL_GPIO_WritePin(MAT_B_GPIO_Port, MAT_B_Pin, row & 0x02);
     HAL_GPIO_WritePin(MAT_C_GPIO_Port, MAT_C_Pin, row & 0x04);
-    HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, row & 0x08);        
+    HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, row & 0x08);
 }
 
 void clearMatrix(void) {
@@ -103,62 +104,74 @@ void write_pixel(pixel p, pos loc) {
     return;
 }
 
+void draw_frame(void) {
+    // Draw the frame to the LED matrix
+    for (int y = 0; y < LED_HEIGHT / 2; y++) {
+        mat_dis();
+        latch_en();
+        selectRow(y);
+        for (int x = 0; x < LED_WIDTH; x++) {
+            pixel p1 = frame[y][x];
+            pixel p2 = frame[y + LED_HEIGHT / 2][x];
+            r1_low();
+            g1_low();
+            b1_low();
+            r2_low();
+            g2_low();
+            b2_low();
+            if (p1.r) r1_high();
+            if (p1.g) g1_high();
+            if (p1.b) b1_high();
+            if (p2.r) r2_high();
+            if (p2.g) g2_high();
+            if (p2.b) b2_high();
+            pulse_clk();
+        }
+        latch_dis();
+        mat_en();
+        delayUS(50);
+    }
+}
 void test_led() {
     HAL_Delay(250);
     ledInit();
     clearMatrix();
 
-    mat_en();
-    int row = 0;
+    uint32_t start = HAL_GetTick(), curr;
+    pixel p = {1, 0, 0};
+    uint16_t radius = 1;
+    int sign = 1;
     while (1) {
-        // mat_dis();
-        latch_en();
-        selectRow(row);
-        row = (row + 1) % 16;
-        for (int i = 0; i < LED_WIDTH; i++) {
-            r1_high();
-            // r2_high();
-            pulse_clk();
-            r1_low();
-            // r2_low();
+        // draw circle with changing radius
+        curr = HAL_GetTick();
+        if (curr - start > 100) {
+            start = curr;
+            if (radius > LED_HEIGHT / 2) {
+                sign *= -1;
+            }
+            if (radius <= 0) {
+                sign *= -1;
+                if (p.r) {
+                    p = (pixel){0, 1, 0};
+                } else if (p.g) {
+                    p = (pixel){0, 0, 1};
+                } else {
+                    p = (pixel){1, 0, 0};
+                }
+            }
 
-            // b1_high();
-            // b2_high();
-            // pulse_clk();
-            // b1_low();
-            // b2_low();
-
-            // g1_high();
-            g2_high();
-            pulse_clk();
-            // g1_low();
-            g2_low();
+            radius += sign;
+           
         }
-        latch_dis();
-        // mat_en();
-        // HAL_Delay(1);
-        delayUS(1);
+
+        for (int i = 0; i < LED_HEIGHT; i++) {
+            for (int j = 0; j < LED_WIDTH; j++) {
+                if ((i - LED_HEIGHT / 2) * (i - LED_HEIGHT / 2) + (j - LED_WIDTH / 2) * (j - LED_WIDTH / 2) < radius * radius) {
+                    frame[i][j] = p;
+                }
+            }
+        }
+        draw_frame();
+        memset(frame, 0, sizeof(frame));
     }
-
-    //     mat_dis();
-    //     latch_en();
-    //     selectRow(10);
-    //     for (int i = 0; i < LED_WIDTH; i += 3) {
-    // r2_high();
-    // pulse_clk();
-    // r2_low();
-    // b2_high();
-    // pulse_clk();
-    // b2_low();
-    // g2_high();
-    // pulse_clk();
-    // g2_low();
-    //     }
-    //     latch_dis();
-    //     mat_en();
-
-    //     HAL_Delay(1);
-    // }
-    // clearMatrix();
-    // latch_dis();
 }

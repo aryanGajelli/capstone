@@ -21,7 +21,7 @@ typedef struct {
 
 #define LED_WIDTH 32
 #define LED_HEIGHT 32
-extern pixel frame[LED_HEIGHT][LED_WIDTH];
+extern volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 
 void test_led(void);
 
