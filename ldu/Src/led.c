@@ -3,34 +3,39 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bsp.h"
 #include "delay_us.h"
 #include "main.h"
-#include "bsp.h"
 #include "stm32f4xx_hal.h"
 
 volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 
+// fast gpio set and reset
+
+#define set_pin(port, pin) (port->BSRR = pin)
+#define reset_pin(port, pin) (port->BSRR = (uint32_t)pin << 16U)
+
 // Control pins
-#define clk_en() HAL_GPIO_WritePin(MAT_CLK_GPIO_Port, MAT_CLK_Pin, GPIO_PIN_RESET)  // Active low
-#define clk_dis() HAL_GPIO_WritePin(MAT_CLK_GPIO_Port, MAT_CLK_Pin, GPIO_PIN_SET)
+#define clk_en()  reset_pin(MAT_CLK_GPIO_Port, MAT_CLK_Pin) // Active low
+#define clk_dis() set_pin(MAT_CLK_GPIO_Port, MAT_CLK_Pin)
 
-#define latch_en() HAL_GPIO_WritePin(MAT_LAT_GPIO_Port, MAT_LAT_Pin, GPIO_PIN_SET)
-#define latch_dis() HAL_GPIO_WritePin(MAT_LAT_GPIO_Port, MAT_LAT_Pin, GPIO_PIN_RESET)
+#define latch_en() set_pin(MAT_LAT_GPIO_Port, MAT_LAT_Pin)
+#define latch_dis() reset_pin(MAT_LAT_GPIO_Port, MAT_LAT_Pin)
 
-#define mat_en() HAL_GPIO_WritePin(MAT_OE_GPIO_Port, MAT_OE_Pin, GPIO_PIN_RESET)  // Active low
-#define mat_dis() HAL_GPIO_WritePin(MAT_OE_GPIO_Port, MAT_OE_Pin, GPIO_PIN_SET)
+#define mat_en() reset_pin(MAT_OE_GPIO_Port, MAT_OE_Pin) // Active low
+#define mat_dis() set_pin(MAT_OE_GPIO_Port, MAT_OE_Pin)
 
-#define A_low() HAL_GPIO_WritePin(MAT_A_GPIO_Port, MAT_A_Pin, GPIO_PIN_RESET)
-#define A_high() HAL_GPIO_WritePin(MAT_A_GPIO_Port, MAT_A_Pin, GPIO_PIN_SET)
+#define A_low() reset_pin(MAT_A_GPIO_Port, MAT_A_Pin)
+#define A_high() set_pin(MAT_A_GPIO_Port, MAT_A_Pin)
 
-#define B_low() HAL_GPIO_WritePin(MAT_B_GPIO_Port, MAT_B_Pin, GPIO_PIN_RESET)
-#define B_high() HAL_GPIO_WritePin(MAT_B_GPIO_Port, MAT_B_Pin, GPIO_PIN_SET)
+#define B_low() reset_pin(MAT_B_GPIO_Port, MAT_B_Pin)
+#define B_high() set_pin(MAT_B_GPIO_Port, MAT_B_Pin)
 
-#define C_low() HAL_GPIO_WritePin(MAT_C_GPIO_Port, MAT_C_Pin, GPIO_PIN_RESET)
-#define C_high() HAL_GPIO_WritePin(MAT_C_GPIO_Port, MAT_C_Pin, GPIO_PIN_SET)
+#define C_low() reset_pin(MAT_C_GPIO_Port, MAT_C_Pin)
+#define C_high() set_pin(MAT_C_GPIO_Port, MAT_C_Pin)
 
-#define D_low() HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, GPIO_PIN_RESET)
-#define D_high() HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, GPIO_PIN_SET)
+#define D_low() reset_pin(MAT_D_GPIO_Port, MAT_D_Pin)
+#define D_high() set_pin(MAT_D_GPIO_Port, MAT_D_Pin)
 
 #define pulse_clk() \
     do {            \
@@ -39,23 +44,23 @@ volatile pixel frame[LED_HEIGHT][LED_WIDTH];
     } while (0)
 
 // Data pins
-#define r1_high() HAL_GPIO_WritePin(MAT_R1_GPIO_Port, MAT_R1_Pin, GPIO_PIN_SET)
-#define r1_low() HAL_GPIO_WritePin(MAT_R1_GPIO_Port, MAT_R1_Pin, GPIO_PIN_RESET)
+#define r1_high() set_pin(MAT_R1_GPIO_Port, MAT_R1_Pin)
+#define r1_low() reset_pin(MAT_R1_GPIO_Port, MAT_R1_Pin)
 
-#define g1_high() HAL_GPIO_WritePin(MAT_G1_GPIO_Port, MAT_G1_Pin, GPIO_PIN_SET)
-#define g1_low() HAL_GPIO_WritePin(MAT_G1_GPIO_Port, MAT_G1_Pin, GPIO_PIN_RESET)
+#define g1_high() set_pin(MAT_G1_GPIO_Port, MAT_G1_Pin)
+#define g1_low() reset_pin(MAT_G1_GPIO_Port, MAT_G1_Pin)
 
-#define b1_high() HAL_GPIO_WritePin(MAT_B1_GPIO_Port, MAT_B1_Pin, GPIO_PIN_SET)
-#define b1_low() HAL_GPIO_WritePin(MAT_B1_GPIO_Port, MAT_B1_Pin, GPIO_PIN_RESET)
+#define b1_high() set_pin(MAT_B1_GPIO_Port, MAT_B1_Pin)
+#define b1_low() reset_pin(MAT_B1_GPIO_Port, MAT_B1_Pin)
 
-#define r2_high() HAL_GPIO_WritePin(MAT_R2_GPIO_Port, MAT_R2_Pin, GPIO_PIN_SET)
-#define r2_low() HAL_GPIO_WritePin(MAT_R2_GPIO_Port, MAT_R2_Pin, GPIO_PIN_RESET)
+#define r2_high() set_pin(MAT_R2_GPIO_Port, MAT_R2_Pin)
+#define r2_low() reset_pin(MAT_R2_GPIO_Port, MAT_R2_Pin)
 
-#define g2_high() HAL_GPIO_WritePin(MAT_G2_GPIO_Port, MAT_G2_Pin, GPIO_PIN_SET)
-#define g2_low() HAL_GPIO_WritePin(MAT_G2_GPIO_Port, MAT_G2_Pin, GPIO_PIN_RESET)
+#define g2_high() set_pin(MAT_G2_GPIO_Port, MAT_G2_Pin)
+#define g2_low() reset_pin(MAT_G2_GPIO_Port, MAT_G2_Pin)
 
-#define b2_high() HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, GPIO_PIN_SET)
-#define b2_low() HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, GPIO_PIN_RESET)
+#define b2_high() set_pin(MAT_B2_GPIO_Port, MAT_B2_Pin)
+#define b2_low() reset_pin(MAT_B2_GPIO_Port, MAT_B2_Pin)
 
 HAL_StatusTypeDef ledInit(void) {
     // Initialize the LED matrix
@@ -81,7 +86,7 @@ void selectRow(uint8_t row) {
 
 void clearMatrix() {
     // Clear the LED matrix
-    memset((void *)frame, 0, sizeof(frame));
+    memset((void*)frame, 0, sizeof(frame));
     draw_frame();
 }
 
@@ -101,7 +106,7 @@ void draw_frame() {
             HAL_GPIO_WritePin(MAT_R2_GPIO_Port, MAT_R2_Pin, p2.r > 0);
             HAL_GPIO_WritePin(MAT_G2_GPIO_Port, MAT_G2_Pin, p2.g > 0);
             HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, p2.b > 0);
-            
+
             pulse_clk();
         }
         latch_dis();
@@ -111,11 +116,38 @@ void draw_frame() {
     mat_dis();
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-{
+uint8_t matrixRow = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     if (htim->Instance == PIXEL_TIMER.Instance) {
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-        draw_frame();
+        mat_dis();
+        latch_en();
+        selectRow(matrixRow);
+        for (int x = 0; x < LED_WIDTH; x++) {
+            pixel p1 = frame[matrixRow][x];
+            pixel p2 = frame[matrixRow + LED_HEIGHT / 2][x];
+            if (p1.r > 0) r1_high();
+            else r1_low();
+
+            if (p1.g > 0) g1_high();
+            else g1_low();
+
+            if (p1.b > 0) b1_high();
+            else b1_low();
+
+            if (p2.r > 0) r2_high();
+            else r2_low();
+
+            if (p2.g > 0) g2_high();
+            else g2_low();
+
+            if (p2.b > 0) b2_high();
+            else b2_low();
+
+            pulse_clk();
+        }
+        latch_dis();
+        mat_en();
+        matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);
     }
 }
 void test_led() {
@@ -145,7 +177,6 @@ void test_led() {
             }
 
             radius += sign;
-           
         }
 
         for (int i = 0; i < LED_HEIGHT; i++) {
@@ -157,7 +188,5 @@ void test_led() {
                 }
             }
         }
-        // draw_frame();
-        // memset((void *)frame, 0, sizeof(frame));
     }
 }
