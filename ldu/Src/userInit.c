@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "delay_us.h"
 #include "bsp.h"
+#include "led.h"
 
 void userInit(void) {
    
@@ -13,6 +14,9 @@ void userInit(void) {
         Error_Handler();
     }
     
+    if (ledInit() != HAL_OK) {
+        Error_Handler();
+    }
     // if (encodersInit() != HAL_OK) {
     //     Error_Handler();
     // }

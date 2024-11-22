@@ -8,4 +8,5 @@
 
 #define DEBUG_UART_HANDLE huart2
 #define US_DELAY_TIMER htim5
+#define PIXEL_TIMER htim2
 #endif // __BSP_H__

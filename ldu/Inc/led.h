@@ -7,11 +7,7 @@
 // https://web.archive.org/web/20121201205905/http://www.hobbypcb.com/blog/item/3-16x32-rgb-led-matrix-technical-details.html
 
 #include <stdint.h>
-
-typedef struct {
-    uint16_t x;
-    uint16_t y;
-} pos;
+#include "stm32f4xx_hal.h"
 
 typedef struct {
     uint16_t r;
@@ -23,6 +19,8 @@ typedef struct {
 #define LED_HEIGHT 32
 extern volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 
+HAL_StatusTypeDef ledInit(void);
 void test_led(void);
+void draw_frame(void);
 
 #endif  // __LED_H__

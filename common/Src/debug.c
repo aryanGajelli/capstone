@@ -17,7 +17,7 @@
 // cases where rtos has probably failed. (If used after rtos starts, it may
 // cause errors in calling non-reentrant hal functions)
 int _write(int file, char *data, int len) {
-    HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)data, len, DEBUG_UART_PRINT_TIMEOUT);
+    HAL_UART_Transmit_DMA(&DEBUG_UART_HANDLE, (uint8_t *)data, len);
     return len;
 }
 

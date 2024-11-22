@@ -5,6 +5,7 @@
 
 #include "delay_us.h"
 #include "main.h"
+#include "bsp.h"
 #include "stm32f4xx_hal.h"
 
 volatile pixel frame[LED_HEIGHT][LED_WIDTH];
@@ -33,7 +34,6 @@ volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 
 #define pulse_clk() \
     do {            \
-        clk_dis();  \
         clk_en();   \
         clk_dis();  \
     } while (0)
@@ -57,13 +57,14 @@ volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 #define b2_high() HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, GPIO_PIN_SET)
 #define b2_low() HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, GPIO_PIN_RESET)
 
-void ledInit(void) {
+HAL_StatusTypeDef ledInit(void) {
     // Initialize the LED matrix
     // This function should be called before any other functions
     // that interact with the LED matrix
     clk_dis();
     latch_dis();
     mat_dis();
+    return HAL_TIM_Base_Start_IT(&PIXEL_TIMER);
 }
 
 void selectRow(uint8_t row) {
@@ -78,34 +79,15 @@ void selectRow(uint8_t row) {
     HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, row & 0x08);
 }
 
-void clearMatrix(void) {
+void clearMatrix() {
     // Clear the LED matrix
-    mat_dis();
-    clk_dis();
-    r1_low();
-    g1_low();
-    b1_low();
-    r2_low();
-    g2_low();
-    b2_low();
-    for (int i = 0; i < LED_WIDTH; i++) {
-        pulse_clk();
-    }
-    clk_dis();
-    mat_en();
-}
-/**
- * @brief Set the color of a pixel
- *
- * @param p The color to set the pixel to
- * @param loc The location of the pixel
- */
-void write_pixel(pixel p, pos loc) {
-    return;
+    memset((void *)frame, 0, sizeof(frame));
+    draw_frame();
 }
 
-void draw_frame(void) {
+void draw_frame() {
     // Draw the frame to the LED matrix
+    // mat_en();
     for (int y = 0; y < LED_HEIGHT / 2; y++) {
         mat_dis();
         latch_en();
@@ -113,28 +95,30 @@ void draw_frame(void) {
         for (int x = 0; x < LED_WIDTH; x++) {
             pixel p1 = frame[y][x];
             pixel p2 = frame[y + LED_HEIGHT / 2][x];
-            r1_low();
-            g1_low();
-            b1_low();
-            r2_low();
-            g2_low();
-            b2_low();
-            if (p1.r) r1_high();
-            if (p1.g) g1_high();
-            if (p1.b) b1_high();
-            if (p2.r) r2_high();
-            if (p2.g) g2_high();
-            if (p2.b) b2_high();
+            HAL_GPIO_WritePin(MAT_R1_GPIO_Port, MAT_R1_Pin, p1.r > 0);
+            HAL_GPIO_WritePin(MAT_G1_GPIO_Port, MAT_G1_Pin, p1.g > 0);
+            HAL_GPIO_WritePin(MAT_B1_GPIO_Port, MAT_B1_Pin, p1.b > 0);
+            HAL_GPIO_WritePin(MAT_R2_GPIO_Port, MAT_R2_Pin, p2.r > 0);
+            HAL_GPIO_WritePin(MAT_G2_GPIO_Port, MAT_G2_Pin, p2.g > 0);
+            HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, p2.b > 0);
+            
             pulse_clk();
         }
         latch_dis();
         mat_en();
-        delayUS(50);
+        delayUS(10);
+    }
+    mat_dis();
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+    if (htim->Instance == PIXEL_TIMER.Instance) {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        draw_frame();
     }
 }
 void test_led() {
-    HAL_Delay(250);
-    ledInit();
     clearMatrix();
 
     uint32_t start = HAL_GetTick(), curr;
@@ -168,10 +152,12 @@ void test_led() {
             for (int j = 0; j < LED_WIDTH; j++) {
                 if ((i - LED_HEIGHT / 2) * (i - LED_HEIGHT / 2) + (j - LED_WIDTH / 2) * (j - LED_WIDTH / 2) < radius * radius) {
                     frame[i][j] = p;
+                } else {
+                    frame[i][j] = (pixel){0, 0, 0};
                 }
             }
         }
-        draw_frame();
-        memset(frame, 0, sizeof(frame));
+        // draw_frame();
+        // memset((void *)frame, 0, sizeof(frame));
     }
 }
