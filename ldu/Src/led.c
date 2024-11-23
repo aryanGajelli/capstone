@@ -16,13 +16,13 @@ volatile pixel frame[LED_HEIGHT][LED_WIDTH];
 #define reset_pin(port, pin) (port->BSRR = (uint32_t)pin << 16U)
 
 // Control pins
-#define clk_en()  reset_pin(MAT_CLK_GPIO_Port, MAT_CLK_Pin) // Active low
+#define clk_en() reset_pin(MAT_CLK_GPIO_Port, MAT_CLK_Pin)  // Active low
 #define clk_dis() set_pin(MAT_CLK_GPIO_Port, MAT_CLK_Pin)
 
 #define latch_en() set_pin(MAT_LAT_GPIO_Port, MAT_LAT_Pin)
 #define latch_dis() reset_pin(MAT_LAT_GPIO_Port, MAT_LAT_Pin)
 
-#define mat_en() reset_pin(MAT_OE_GPIO_Port, MAT_OE_Pin) // Active low
+#define mat_en() reset_pin(MAT_OE_GPIO_Port, MAT_OE_Pin)  // Active low
 #define mat_dis() set_pin(MAT_OE_GPIO_Port, MAT_OE_Pin)
 
 #define A_low() reset_pin(MAT_A_GPIO_Port, MAT_A_Pin)
@@ -41,6 +41,26 @@ volatile pixel frame[LED_HEIGHT][LED_WIDTH];
     do {            \
         clk_en();   \
         clk_dis();  \
+    } while (0)
+
+#define selectRow(row)    \
+    do {                  \
+        if ((row) & 0x01) \
+            A_high();     \
+        else              \
+            A_low();      \
+        if ((row) & 0x02) \
+            B_high();     \
+        else              \
+            B_low();      \
+        if ((row) & 0x04) \
+            C_high();     \
+        else              \
+            C_low();      \
+        if ((row) & 0x08) \
+            D_high();     \
+        else              \
+            D_low();      \
     } while (0)
 
 // Data pins
@@ -72,124 +92,171 @@ HAL_StatusTypeDef ledInit(void) {
     return HAL_TIM_Base_Start_IT(&PIXEL_TIMER);
 }
 
-void selectRow(uint8_t row) {
-    if (row > 0x0F) {
-        printf("Invalid row: got [%u] expected between [0-15]\n", row);
-        return;
-    }
-    if (row & 0x01) A_high();
-    else A_low();
-    if (row & 0x02) B_high();
-    else B_low();
-    if (row & 0x04) C_high();
-    else C_low();
-    if (row & 0x08) D_high();
-    else D_low();
-}
-
 void clearMatrix() {
     // Clear the LED matrix
     memset((void*)frame, 0, sizeof(frame));
-    draw_frame();
-}
-
-void draw_frame() {
-    // Draw the frame to the LED matrix
-    // mat_en();
-    for (int y = 0; y < LED_HEIGHT / 2; y++) {
-        mat_dis();
-        latch_en();
-        selectRow(y);
-        for (int x = 0; x < LED_WIDTH; x++) {
-            pixel p1 = frame[y][x];
-            pixel p2 = frame[y + LED_HEIGHT / 2][x];
-            HAL_GPIO_WritePin(MAT_R1_GPIO_Port, MAT_R1_Pin, p1.r > 0);
-            HAL_GPIO_WritePin(MAT_G1_GPIO_Port, MAT_G1_Pin, p1.g > 0);
-            HAL_GPIO_WritePin(MAT_B1_GPIO_Port, MAT_B1_Pin, p1.b > 0);
-            HAL_GPIO_WritePin(MAT_R2_GPIO_Port, MAT_R2_Pin, p2.r > 0);
-            HAL_GPIO_WritePin(MAT_G2_GPIO_Port, MAT_G2_Pin, p2.g > 0);
-            HAL_GPIO_WritePin(MAT_B2_GPIO_Port, MAT_B2_Pin, p2.b > 0);
-
-            pulse_clk();
-        }
-        latch_dis();
-        mat_en();
-        delayUS(10);
-    }
-    mat_dis();
+    delayUS(1100);  // wait for 1ms to allow auto frame clear by the timer
 }
 
 uint8_t matrixRow = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     if (htim->Instance == PIXEL_TIMER.Instance) {
+        /*
         mat_dis();
         latch_en();
         selectRow(matrixRow);
         for (int x = 0; x < LED_WIDTH; x++) {
             pixel p1 = frame[matrixRow][x];
             pixel p2 = frame[matrixRow + LED_HEIGHT / 2][x];
-            if (p1.r > 0) r1_high();
-            else r1_low();
+            if (p1.r)
+                r1_high();
+            else
+                r1_low();
 
-            if (p1.g > 0) g1_high();
-            else g1_low();
+            if (p1.g)
+                g1_high();
+            else
+                g1_low();
 
-            if (p1.b > 0) b1_high();
-            else b1_low();
+            if (p1.b)
+                b1_high();
+            else
+                b1_low();
 
-            if (p2.r > 0) r2_high();
-            else r2_low();
+            if (p2.r)
+                r2_high();
+            else
+                r2_low();
 
-            if (p2.g > 0) g2_high();
-            else g2_low();
+            if (p2.g)
+                g2_high();
+            else
+                g2_low();
 
-            if (p2.b > 0) b2_high();
-            else b2_low();
+            if (p2.b)
+                b2_high();
+            else
+                b2_low();
 
             pulse_clk();
         }
         latch_dis();
         mat_en();
         matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);
+        */
     }
 }
 void test_led() {
+    HAL_Delay(1000);
     clearMatrix();
 
-    uint32_t start = HAL_GetTick(), curr;
-    pixel p = {1, 0, 0};
-    uint16_t radius = 1;
-    int sign = 1;
+    // draw all 8 colors in 12 pixel blocks
+    // pixel p = {1, 0, 0};
+
+    // for (int y = 0; y < LED_HEIGHT; y++) {
+    //     if (y % 4 == 0) {
+    //         p = (pixel){(y/4)&0x01, (y/4)&0x02, (y/4)&0x04};
+    //     }
+
+    //     for (int x = 0; x < LED_WIDTH; x++) {
+    //         frame[y][x] = p;
+    //     }
+    // }
+    int color = 0;
+
+    // draw all 4bit colors every 2 pixels
+    for (int y = 0; y < LED_HEIGHT; y++) {
+        for (int x = 0; x < LED_WIDTH; x++) {
+            frame[y][x] = (pixel){x,0, y};
+            // color = (color + 1) % 512; // Cycle through all 512 colors (9-bit)
+        }
+    }
+    // print frame
+    // for (int y = 0; y < LED_HEIGHT; y++) {
+    //     for (int x = 0; x < LED_WIDTH; x++) {
+    //         printf("%0x%0x%0x ", frame[y][x].r, frame[y][x].g, frame[y][x].b);
+    //     }
+    //     printf("\n");
+    // }
+
+    const int bits = 5;
+    // uint8_t bitplane = 0;
+    pixel p1;
+    const int period = 10;
     while (1) {
-        // draw circle with changing radius
-        curr = HAL_GetTick();
-        if (curr - start > 100) {
-            start = curr;
-            if (radius > LED_HEIGHT / 2) {
-                sign *= -1;
-            }
-            if (radius <= 0) {
-                sign *= -1;
-                if (p.r) {
-                    p = (pixel){0, 1, 0};
-                } else if (p.g) {
-                    p = (pixel){0, 0, 1};
-                } else {
-                    p = (pixel){1, 0, 0};
-                }
-            }
+        selectRow(matrixRow);
+        for (int bitplane = 0; bitplane < (1 << bits); bitplane++){
+            latch_dis();
+            mat_dis();
+            
+            for (int x = 0; x < LED_WIDTH; x++) {
+                p1 = frame[matrixRow][x];
+                pixel p2 = frame[matrixRow + LED_HEIGHT / 2][x];
+                if (p1.r == bitplane && p1.r)
+                    r1_high();
+                else
+                    r1_low();
+                
+                if (p1.g == bitplane && p1.g)
+                    g1_high();
+                else
+                    g1_low();
+                
+                if (p1.b == bitplane && p1.b)
+                    b1_high();
+                else
+                    b1_low();
+                
+                if (p2.r == bitplane && p2.r)
+                    r2_high();
+                else
+                    r2_low();
+                
+                if (p2.g == bitplane && p2.g)
+                    g2_high();
+                else
+                    g2_low();
+                
+                if (p2.b == bitplane && p2.b)
+                    b2_high();
+                else
+                    b2_low();
+    /*
+                if (p1.g)
+                    g1_high();
+                else
+                    g1_low();
 
-            radius += sign;
-        }
+                if (p1.b)
+                    b1_high();
+                else
+                    b1_low();
 
-        for (int i = 0; i < LED_HEIGHT; i++) {
-            for (int j = 0; j < LED_WIDTH; j++) {
-                if ((i - LED_HEIGHT / 2) * (i - LED_HEIGHT / 2) + (j - LED_WIDTH / 2) * (j - LED_WIDTH / 2) < radius * radius) {
-                    frame[i][j] = p;
-                } else {
-                    frame[i][j] = (pixel){0, 0, 0};
-                }
+                if (p2.r)
+                    r2_high();
+                else
+                    r2_low();
+
+                if (p2.g)
+                    g2_high();
+                else
+                    g2_low();
+
+                if (p2.b)
+                    b2_high();
+                else
+                    b2_low();
+    */
+                pulse_clk();
             }
+            latch_en();
+            mat_en();
+            delayUS(period * bitplane / (1 << bits));
         }
+        
+        
+        // printf("%u %d\n",p1.r, bitplane);
+       
+        matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);        
     }
 }
