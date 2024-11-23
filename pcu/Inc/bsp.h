@@ -8,5 +8,6 @@
 
 #define DEBUG_UART_HANDLE huart2
 #define ENCODER_TIMER_HANDLE htim2
+#define RPM_TIMER_HANDLE htim7
 
 #endif // __BSP_H__
