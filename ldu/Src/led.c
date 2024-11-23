@@ -77,11 +77,14 @@ void selectRow(uint8_t row) {
         printf("Invalid row: got [%u] expected between [0-15]\n", row);
         return;
     }
-
-    HAL_GPIO_WritePin(MAT_A_GPIO_Port, MAT_A_Pin, row & 0x01);
-    HAL_GPIO_WritePin(MAT_B_GPIO_Port, MAT_B_Pin, row & 0x02);
-    HAL_GPIO_WritePin(MAT_C_GPIO_Port, MAT_C_Pin, row & 0x04);
-    HAL_GPIO_WritePin(MAT_D_GPIO_Port, MAT_D_Pin, row & 0x08);
+    if (row & 0x01) A_high();
+    else A_low();
+    if (row & 0x02) B_high();
+    else B_low();
+    if (row & 0x04) C_high();
+    else C_low();
+    if (row & 0x08) D_high();
+    else D_low();
 }
 
 void clearMatrix() {
