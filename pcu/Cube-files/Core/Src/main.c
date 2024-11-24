@@ -26,7 +26,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "debug.h"
+#include "bsp.h"
 #include "userInit.h"
+#include "encoder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -172,7 +175,8 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int32_t last = 0;
+float rpm = 0;
 /* USER CODE END 4 */
 
 /**
@@ -186,13 +190,18 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-
+  
+  if (htim->Instance == RPM_TIMER_HANDLE.Instance) {
+    int32_t curr = encoderCount();
+    rpm = (float)(curr - last) * SAMPLES_PER_SEC * RPS_TO_RPM / TICKS_PER_REV;
+    last = curr;
+  }
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM14) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+  
   /* USER CODE END Callback 1 */
 }
 

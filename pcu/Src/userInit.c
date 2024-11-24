@@ -2,20 +2,21 @@
 
 #include "bsp.h"
 #include "debug.h"
+#include "encoder.h"
 #include "motor.h"
 
 void userInit(void) {
     if (debugInit() != HAL_OK) {
-        Error_Handler();
+        handleError();
     }
 
     if (motorInit() != HAL_OK) {
         Error_Handler();
     }
-
-    // if (encodersInit() != HAL_OK) {
-    //     Error_Handler();
-    // }
+    
+    if (encodersInit() != HAL_OK) {
+        Error_Handler();
+    }
 
     printf("----------------------------------\nFinished User Init\n");
 }
