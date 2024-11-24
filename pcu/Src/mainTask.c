@@ -6,19 +6,18 @@
 #include "bsp.h"
 #include "encoder.h"
 
-#define MAIN_TASK_PERIOD_MS 10
+#define MAIN_TASK_PERIOD_MS 100
 void mainTask(void const* argument) {
     uprintf("Starting mainTask\n");
     // motorSetDutyCycle(7);
     motorSetPulseWidth(1500);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
     motorSetSpeed(0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
     motorSetSpeed(50);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(100));
     motorSetSpeed(100);
     TickType_t xLastWakeTime = xTaskGetTickCount();
-
 
     while (1) {
         uprintf("RPM: %f\n", rpm);

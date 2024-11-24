@@ -25,10 +25,8 @@ HAL_StatusTypeDef motorSetSpeed(float speed) {
         uprintf("Invalid speed: %f\n", speed);
         return HAL_ERROR;
     }
-    float dutyCycle = map(speed, 0, 100, MIN_DUTY_CYCLE, MAX_DUTY_CYCLE);
-    uint32_t CRR = dutyCycle * motorARR;
-    __HAL_TIM_SET_COMPARE(&MOTOR_TIM_HANDLE, MOTOR_TIM_CHANNEL, CRR);
-    return HAL_OK;
+    float pulseWidth = map(speed, 0, 100, MIN_PULSE_WIDTH_US, MAX_PULSE_WIDTH_US);
+    return motorSetPulseWidth(pulseWidth);
 }
 
 HAL_StatusTypeDef motorSetDutyCycle(float dutyCycle) {

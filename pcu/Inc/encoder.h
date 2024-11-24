@@ -5,7 +5,12 @@
 #include "bsp.h"
 #include <math.h>
 
-#define TICKS_PER_REV (2048*4)
+#define QUAD_ENCODER 4
+#define TICKS_PER_REV (2048*QUAD_ENCODER)
+#define RPS_TO_RPM 60
+#define SAMPLE_PERIOD_MS 100
+#define SAMPLES_PER_SEC (1000 / SAMPLE_PERIOD_MS)
+
 
 
 HAL_StatusTypeDef encodersInit(void);

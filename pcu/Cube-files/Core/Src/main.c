@@ -193,9 +193,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   
   if (htim->Instance == RPM_TIMER_HANDLE.Instance) {
     int32_t curr = encoderCount();
-    float diff = curr - last;
+    rpm = (float)(curr - last) * SAMPLES_PER_SEC * RPS_TO_RPM / TICKS_PER_REV;
     last = curr;
-    rpm = diff * 1000. / TICKS_PER_REV;
   }
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM14) {
