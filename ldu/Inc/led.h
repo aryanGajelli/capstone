@@ -10,14 +10,14 @@
 #include "stm32f4xx_hal.h"
 
 typedef struct {
-    uint16_t r;
-    uint16_t g;
-    uint16_t b;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
 } pixel;
 
 #define LED_WIDTH 32
 #define LED_HEIGHT 32
-extern volatile pixel frame[LED_HEIGHT][LED_WIDTH];
+extern uint16_t frame[LED_HEIGHT][LED_WIDTH];
 
 HAL_StatusTypeDef ledInit(void);
 void test_led(void);
