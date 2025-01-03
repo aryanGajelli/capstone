@@ -6,7 +6,12 @@
 #include "bsp.h"
 #include "delay_us.h"
 #include "main.h"
+#include "cmsis_gcc.h"
 #include "stm32f4xx_hal.h"
+
+
+#define BITS 5
+#define PERIOD_US 50
 
 uint16_t frame[LED_HEIGHT][LED_WIDTH];
 
@@ -43,24 +48,12 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH];
         clk_dis();  \
     } while (0)
 
-#define selectRow(row)    \
-    do {                  \
-        if ((row) & 0x01) \
-            A_high();     \
-        else              \
-            A_low();      \
-        if ((row) & 0x02) \
-            B_high();     \
-        else              \
-            B_low();      \
-        if ((row) & 0x04) \
-            C_high();     \
-        else              \
-            C_low();      \
-        if ((row) & 0x08) \
-            D_high();     \
-        else              \
-            D_low();      \
+#define selectRow(row)                       \
+    do {                                     \
+        ((row) & 0x01) ? A_high() : A_low(); \
+        ((row) & 0x02) ? B_high() : B_low(); \
+        ((row) & 0x04) ? C_high() : C_low(); \
+        ((row) & 0x08) ? D_high() : D_low(); \
     } while (0)
 
 // Data pins
@@ -91,65 +84,68 @@ HAL_StatusTypeDef ledInit(void) {
     clk_dis();
     latch_dis();
     mat_dis();
-    return HAL_OK;
-    // return HAL_TIM_Base_Start_IT(&PIXEL_TIMER);
+    return HAL_TIM_Base_Start_IT(&PIXEL_TIMER);
 }
 
 void clearMatrix() {
     // Clear the LED matrix
     memset((void*)frame, 0, sizeof(frame));
-    delayUS(1100);  // wait for 1ms to allow auto frame clear by the timer
+    delayUS(2 * PERIOD_US);  // wait for 100us to allow auto frame clear by the timer
 }
 
 uint8_t matrixRow = 0;
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-//     if (htim->Instance == PIXEL_TIMER.Instance) {
-//         return;
-//         /*
-//         mat_dis();
-//         latch_en();
-//         selectRow(matrixRow);
-//         for (int x = 0; x < LED_WIDTH; x++) {
-//             pixel p1 = frame[matrixRow][x];
-//             pixel p2 = frame[matrixRow + LED_HEIGHT / 2][x];
-//             if (p1.r)
-//                 r1_high();
-//             else
-//                 r1_low();
+uint8_t bitplane = 0;
+uint32_t delay = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+    if (htim->Instance == PIXEL_TIMER.Instance) {
+        if (bitplane == 0) {
+            selectRow(matrixRow);
+        }
 
-//             if (p1.g)
-//                 g1_high();
-//             else
-//                 g1_low();
+        uint32_t start = __HAL_TIM_GET_COUNTER(&PIXEL_TIMER);
 
-//             if (p1.b)
-//                 b1_high();
-//             else
-//                 b1_low();
+        // bitplane masks to check if r g b should be high or low
+        uint16_t bitplane_mask = 1u << bitplane;
+        uint16_t r_mask = bitplane_mask << (2 * BITS - 1);
+        uint16_t g_mask = bitplane_mask << (BITS - 1);
 
-//             if (p2.r)
-//                 r2_high();
-//             else
-//                 r2_low();
+        // send data serially
+        for (uint8_t x = 0; x < LED_WIDTH; x++) {
+            uint16_t p1 = frame[matrixRow][x];
+            uint16_t p2 = frame[matrixRow + LED_HEIGHT / 2][x];
 
-//             if (p2.g)
-//                 g2_high();
-//             else
-//                 g2_low();
+            (r_mask & p1) ? r1_high() : r1_low();
+            (g_mask & p1) ? g1_high() : g1_low();
+            (bitplane_mask & p1) ? b1_high() : b1_low();
 
-//             if (p2.b)
-//                 b2_high();
-//             else
-//                 b2_low();
+            (r_mask & p2) ? r2_high() : r2_low();
+            (g_mask & p2) ? g2_high() : g2_low();
+            (bitplane_mask & p2) ? b2_high() : b2_low();
 
-//             pulse_clk();
-//         }
-//         latch_dis();
-//         mat_en();
-//         matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);
-//         */
-//     }
-// }
+            pulse_clk();
+        }
+
+        // latch the data and display row
+        mat_dis();
+        latch_en();
+        latch_dis();
+        mat_en();
+
+        // delay for respective portion of the period so that the row is visible
+        delay = __HAL_TIM_GET_COUNTER(&PIXEL_TIMER) - start;
+        uint32_t p = PERIOD_US * bitplane_mask / (1 << BITS);
+        if (p > delay)
+            __HAL_TIM_SET_AUTORELOAD(&PIXEL_TIMER, p - delay);
+
+        // advance to next bitplane or row
+        if (bitplane == BITS) {
+            bitplane = 0;
+            matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);
+        } else {
+            bitplane++;
+        }
+    }
+}
 void test_led() {
     clearMatrix();
 
@@ -157,7 +153,7 @@ void test_led() {
 
     for (int y = 0; y < LED_HEIGHT; y++) {
         for (int x = 0; x < LED_WIDTH; x++) {
-            frame[y][x] = x << 10 | y;
+            frame[y][x] = x << (2 * BITS) | y;
         }
     }
     // swap 1st and 2nd rows
@@ -173,56 +169,27 @@ void test_led() {
     //     }
     //     printf("\n");
     // }
-
-    const int bits = 5;
-    uint16_t p1, p2;
-    const int period = 200;
-
+    // int h = 2, w = 2, dx = 2, dy = -3;
+    // int x = LED_WIDTH/2 - w/2, y = LED_HEIGHT/2 - h/2;
     while (1) {
-        // rotate the frame
-        // for (int y = 0; y < LED_HEIGHT / 2; y++) {
-        //     for (int x = 0; x < LED_WIDTH; x++) {
-        //         frame[y][x] = frame[y + 1][x];
-        //         frame[y + LED_HEIGHT / 2][x] = frame[y + LED_HEIGHT / 2 + 1][x];
+        // clearMatrix();
+        // // draw rotating red square
+        // for (int i = 0; i < w; i++) {
+        //     for (int j = 0; j < h; j++) {
+        //         frame[y + j][x + i] = 0x11<<(2*BITS);
         //     }
         // }
-        if (matrixRow == 0)
-            selectRow(1);
-        else if (matrixRow == 1)
-            selectRow(0);
-        else
-            selectRow(matrixRow);
-
-        for (int bitplane = bits; bitplane >= 0; bitplane--) {
-            __HAL_TIM_SET_COUNTER(&US_DELAY_TIMER, 0);
-            uint16_t bitplane_mask = 1u << bitplane;
-            uint16_t mask1 = bitplane_mask << 9;
-            uint16_t mask2 = bitplane_mask << 4;
-            for (uint8_t x = 0; x < LED_WIDTH; x++) {
-                p1 = frame[matrixRow][x];
-                p2 = frame[matrixRow + LED_HEIGHT / 2][x];
-                // MAT_RGB1_GPIO_Port->BSRR = ((1 << bitplane) & p1.r) ? MAT_R1_Pin : ((uint32_t)MAT_R1_Pin << 16u);
-                (mask1 & p1) ? r1_high() : r1_low();
-                (mask2 & p1) ? g1_high() : g1_low();
-                (bitplane_mask & p1) ? b1_high() : b1_low();
-
-                (mask1 & p2) ? r2_high() : r2_low();
-                (mask2 & p2) ? g2_high() : g2_low();
-                (bitplane_mask & p2) ? b2_high() : b2_low();
-
-                pulse_clk();
-            }
-            
-            mat_dis();
-            latch_en();
-            latch_dis();
-            mat_en();
-            uint32_t delay = __HAL_TIM_GET_COUNTER(&US_DELAY_TIMER);
-            // printf("%d: %d\n", bitplane, delay);
-            uint32_t p = period * bitplane_mask / (1 << bits);
-            if (p > delay)
-                delayUS(p - delay);
-        }
-        matrixRow = (matrixRow + 1) % (LED_HEIGHT / 2);
+        // x += dx;
+        // y += dy;
+        // if (x + w >= LED_WIDTH || x < 0) {
+        //     dx = -dx;
+        //     x += dx;
+        // }
+        // if (y + h >= LED_HEIGHT || y < 0) {
+        //     dy = -dy;
+        //     y += dy;
+        // }
+        // printf("%lu\n", delay);
+        HAL_Delay(1000);
     }
 }
