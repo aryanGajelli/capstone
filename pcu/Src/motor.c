@@ -24,8 +24,7 @@ uint16_t PW_2_RPM_LUT[][2] = {
     {1850, 2784},
     {1900, 2860},
     {1950, 2950},
-    {2000, 3085}
-};
+    {2000, 3085}};
 
 uint32_t motorARR;
 HAL_StatusTypeDef motorInit() {
@@ -62,7 +61,7 @@ HAL_StatusTypeDef motorSetDutyCycle(double dutyCycle) {
 }
 
 HAL_StatusTypeDef motorSetRPM(double requestedRPM) {
-    if (requestedRPM < PW_2_RPM_LUT[0][1]){
+    if (requestedRPM < PW_2_RPM_LUT[0][1]) {
         uprintf("Invalid RPM: %f, min reqd: %u\n", requestedRPM, PW_2_RPM_LUT[0][1]);
         return HAL_ERROR;
     }
@@ -86,4 +85,36 @@ HAL_StatusTypeDef motorSetPulseWidth(double pulseWidth) {
     uint32_t CRR = pulseWidth * motorARR / PPM_PERIOD_US;
     __HAL_TIM_SET_COMPARE(&MOTOR_TIM_HANDLE, MOTOR_TIM_CHANNEL, CRR);
     return HAL_OK;
+}
+
+#define MOTOR_TASK_PERIOD_MS 100
+
+void motorTask(void const* argument) {
+    uprintf("Starting motorTask\n");
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    motorSetPulseWidth(1000);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    // motorSetPulseWidth(1545);
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    motorSetPulseWidth(1200);
+
+    // motorSetRPM(500);
+    // vTaskDelay(pdMS_TO_TICKS(500));
+    // motorSetPulseWidth(2000);
+    // motorSetRPM(1000);
+    // vTaskDelay(pdMS_TO_TICKS(500));
+    // motorSetPulseWidth(2500);
+    // motorSetRPM(1500);
+    // vTaskDelay(pdMS_TO_TICKS(5000));
+    // motorSetRPM(1700);
+    // vTaskDelay(pdMS_TO_TICKS(5000));
+    // motorSetRPM(2000);
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    // motorSetRPM(2500);
+    // motorSetPulseWidth(1600);
+    // vTaskDelay(pdMS_TO_TICKS(5000));
+    // motorSetPulseWidth(1500);
+    while (1) {
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));
+    }
 }
