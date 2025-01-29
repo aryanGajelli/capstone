@@ -1,0 +1,16 @@
+[StartTime]
+Motor Mount Bottom-Frequency 1.MFC=
+[SolverState]
+Motor Mount Bottom-Frequency 1.MFC=2
+[MainFrame]
+Motor Mount Bottom-Frequency 1.MFC=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPMADAAAAADLBAAAAAEHEAAAAAGICAAAAA
+[ShowMin]
+Motor Mount Bottom-Frequency 1.MFC=yes
+[SolverType]
+Motor Mount Bottom-Frequency 1.MFC=Linear Analysis
+[StudyType]
+Motor Mount Bottom-Frequency 1.MFC=-1
+[StudyName]
+[Solver]
+Motor Mount Bottom-Frequency 1.MFC=Sparse
+[StudyName1]
