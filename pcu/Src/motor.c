@@ -3,6 +3,7 @@
 #include "bsp.h"
 #include "debug.h"
 #include "main.h"
+#include "mathUtils.h"
 #include "stm32f4xx_hal.h"
 #include "tim.h"
 
@@ -34,10 +35,6 @@ HAL_StatusTypeDef motorInit() {
     }
 
     return HAL_OK;
-}
-
-double map(double x, double in_min, double in_max, double out_min, double out_max) {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 HAL_StatusTypeDef motorSetSpeed(double speed) {
