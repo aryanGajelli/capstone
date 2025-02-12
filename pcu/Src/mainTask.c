@@ -13,8 +13,6 @@ void mainTask(void const* argument) {
     uprintf("Starting mainTask\n");
     TickType_t xLastWakeTime = xTaskGetTickCount();
     while (1) {
-        uint32_t pot = getRawPotValue();
-        uprintf("pot: %ld, mapped: %lf\n", pot, map(pot, 0, 4095, 0, 7000));
         // uprintf("RPM: %f\n", rpm);
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MAIN_TASK_PERIOD_MS));
