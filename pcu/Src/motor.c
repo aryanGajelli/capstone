@@ -13,7 +13,7 @@
 #define MOTOR_MIN_PULSE_WIDTH_US 1075
 #define MOTOR_MAX_PULSE_WIDTH_US 2200
 
-#define MOTOR_LIMIT_PCT 40.
+#define MOTOR_LIMIT_PCT 20.
 
 uint16_t PW_2_RPM_LUT[][2] = {
     {1565, 463},
