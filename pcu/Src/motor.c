@@ -13,7 +13,7 @@
 #define MOTOR_MIN_PULSE_WIDTH_US 1075
 #define MOTOR_MAX_PULSE_WIDTH_US 2200
 
-#define MOTOR_LIMIT_PCT 20.
+#define MOTOR_LIMIT_PCT 50.
 
 uint16_t PW_2_RPM_LUT[][2] = {
     {1565, 463},
@@ -124,7 +124,7 @@ void motorTask(void const* argument) {
 
         motorSetPulseWidth(pulseWidth);
         // if (HAL_GetTick() - start > 1000) {
-        uprintf("pot: %ld, mapped pw: %.3lf\n", potValue, pulseWidth);
+        uprintf("pot: %.2lf%%, mapped pw: %.3lf\n", 100.*potValue/POT_MAX_VALUE, pulseWidth);
         //     start = HAL_GetTick();
         // }
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));
