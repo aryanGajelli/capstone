@@ -49,6 +49,7 @@
 /* USER CODE END Variables */
 osThreadId mainTaskNameHandle;
 osThreadId printTaskNameHandle;
+osThreadId motorTaskNameHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -57,6 +58,7 @@ osThreadId printTaskNameHandle;
 
 void mainTask(void const * argument);
 extern void printTask(void const * argument);
+extern void motorTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -110,6 +112,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of printTaskName */
   osThreadDef(printTaskName, printTask, osPriorityLow, 0, 128);
   printTaskNameHandle = osThreadCreate(osThread(printTaskName), NULL);
+
+  /* definition and creation of motorTaskName */
+  osThreadDef(motorTaskName, motorTask, osPriorityNormal, 0, 512);
+  motorTaskNameHandle = osThreadCreate(osThread(motorTaskName), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

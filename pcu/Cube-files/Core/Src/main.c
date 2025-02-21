@@ -19,13 +19,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
 #include "dma.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "debug.h"
+#include "bsp.h"
 #include "userInit.h"
+#include "encoder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,6 +97,10 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
+  MX_TIM4_Init();
+  MX_TIM2_Init();
+  MX_TIM7_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   userInit();
   /* USER CODE END 2 */
@@ -131,9 +140,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -169,7 +177,8 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int32_t last = 0;
+float rpm = 0;
 /* USER CODE END 4 */
 
 /**
@@ -183,13 +192,18 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-
+  
+  if (htim->Instance == RPM_TIMER_HANDLE.Instance) {
+    int32_t curr = encoderCount();
+    rpm = (float)(curr - last) * SAMPLES_PER_SEC * RPS_TO_RPM / TICKS_PER_REV;
+    last = curr;
+  }
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM14) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+  
   /* USER CODE END Callback 1 */
 }
 
