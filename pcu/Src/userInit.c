@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "encoder.h"
 #include "motor.h"
+#include "pot.h"
 
 void userInit(void) {
     if (debugInit() != HAL_OK) {
@@ -13,8 +14,12 @@ void userInit(void) {
     if (motorInit() != HAL_OK) {
         Error_Handler();
     }
-    
+
     if (encodersInit() != HAL_OK) {
+        Error_Handler();
+    }
+
+    if (potInit() != HAL_OK) {
         Error_Handler();
     }
 
