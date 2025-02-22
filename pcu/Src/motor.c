@@ -124,7 +124,7 @@ void motorTask(void const* argument) {
 
         motorSetPulseWidth(pulseWidth);
         // if (HAL_GetTick() - start > 1000) {
-        uprintf("pot: %ld, mapped pw: %.3lf\n", potValue, pulseWidth);
+        // uprintf("pot: %ld, mapped pw: %.3lf\n", potValue, pulseWidth);
         //     start = HAL_GetTick();
         // }
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));
