@@ -86,12 +86,9 @@ HAL_StatusTypeDef motorSetRPM(double requestedRPM) {
 }
 
 HAL_StatusTypeDef motorSetPulseWidth(double pulseWidth) {
-    // if (pulseWidth < MIN_PULSE_WIDTH_US || pulseWidth > MAX_PULSE_WIDTH_US) {
-    //     uprintf("Invalid pulse width: %f\n", pulseWidth);
-    //     return HAL_ERROR;
-    // }
-
-    uint32_t CRR = pulseWidth * motorARR / PPM_PERIOD_US;
+    // Pre-calculate constant part of the equation
+    static const double conversion_factor = (double)motorARR / PPM_PERIOD_US;
+    uint32_t CRR = pulseWidth * conversion_factor;
     __HAL_TIM_SET_COMPARE(&MOTOR_TIM_HANDLE, MOTOR_TIM_CHANNEL, CRR);
     return HAL_OK;
 }
