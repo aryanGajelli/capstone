@@ -1,5 +1,6 @@
-#include "led-matrix-c.h"
 #include <stdlib.h>
+
+#include "led-matrix-c.h"
 
 int main(int argc, char **argv) {
     struct RGBLedMatrixOptions options = {
@@ -23,9 +24,12 @@ int main(int argc, char **argv) {
     struct LedCanvas *canvas = led_matrix_get_canvas(matrix);
     // draw red vertical line 10 pixels thick, 32 pixels from the left
     led_canvas_clear(canvas);
-
+#define WIDTH 10
+#define HEIGHT 64
+#define size (WIDTH * HEIGHT)
+    struct Color colors[size] = {[0 ...(size - 1)] = {255, 0, 0}};
+    led_canvas_set_pixels(canvas, 32, 0, 10, 64, colors);
     while (1) {
-        led_canvas_set_pixels(canvas, 32, 0, 10, 64, (struct Color[]){{0, 255, 0}});
     }
 
     free(matrix);
