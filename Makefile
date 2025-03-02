@@ -31,7 +31,8 @@ matrix:
 	@make -C $(RGB_LIBDIR)
 
 raspi:
-	@make -C raspi/ BUILD_DIR="$(BUILD_DIR)/raspi" RGB_INCDIR="$(RGB_INCDIR)" RGB_LIBRARY="$(RGB_LIBRARY)" RGB_LDFLAGS="$(RGB_LDFLAGS)" --no-print-directory
+	@mkdir -p $(BIN_DIR)
+	@make -C raspi/ RGB_INCDIR="$(RGB_INCDIR)" RGB_LIBRARY="$(RGB_LIBRARY)" RGB_LDFLAGS="$(RGB_LDFLAGS)" --no-print-directory
 
 flash:
 	STM32_Programmer_CLI -c port=SWD -w $(BIN_FILE) 0x08000000 -v -hardRst
