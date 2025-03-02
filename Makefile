@@ -1,9 +1,9 @@
 CUSTOM_COMMANDS = all clean
-BOARDS = ldu pcu
+BOARDS = ldu pcu raspi
 
 .PHONY: $(CUSTOM_COMMANDS) $(BOARDS) 
 
-all: ldu pcu
+all: ldu pcu raspi
 
 board ?=
 BIN_DIR = Bin
@@ -20,9 +20,11 @@ pcu:
 	@mkdir -p $(BIN_DIR)
 	@make -C pcu/ BUILD_DIR=$(BUILD_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" --no-print-directory
 
+raspi:
+	@make -C raspi/ BUILD_DIR="$(BUILD_DIR)/raspi" --no-print-directory
+
 flash:
 	STM32_Programmer_CLI -c port=SWD -w $(BIN_FILE) 0x08000000 -v -hardRst
 
 clean:
 	rm -rf $(BIN_DIR)
-

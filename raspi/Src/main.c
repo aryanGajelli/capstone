@@ -26,4 +26,7 @@ int main(int argc, char **argv) {
     while (1) {
         led_canvas_set_pixels(canvas, 32, 0, 10, 64, (struct Color[]){{0, 255, 0}});
     }
+
+    free(matrix);
+    free(canvas);
 }
