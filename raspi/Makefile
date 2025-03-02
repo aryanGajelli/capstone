@@ -1,7 +1,8 @@
 CC = gcc
-C_FLAGS = -std=c++11 -Wall -O3
+C_FLAGS = -std=c11 -Wall -O3
 
 BUILD_DIR ?= ../Bin
+RGB_INCDIR ?=
 RGB_LIBRARY ?=
 RGB_LDFLAGS ?=
 
@@ -19,6 +20,8 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 # # 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
+INC = -I$(INC_DIR) -I$(RGB_INCDIR)
 
 voxel:
-	$(CC) $(C_SOURCES) -c $(C_FLAGS) $(OBJECTS) -o $@ $(RGB_LDFLAGS)
+#	@mkdir -p $(BUILD_DIR)
+	$(CC) $(C_SOURCES) $(INC) -c $(C_FLAGS) $(OBJECTS) -o $@ $(RGB_LDFLAGS)

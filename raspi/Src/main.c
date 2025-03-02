@@ -1,4 +1,5 @@
-#include "rpi-rgb-led-matrix/include/led-matrix-c.h"
+#include "led-matrix-c.h"
+#include <stdlib.h>
 
 int main(int argc, char **argv) {
     struct RGBLedMatrixOptions options = {
