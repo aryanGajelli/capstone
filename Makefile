@@ -3,7 +3,7 @@ BOARDS = ldu pcu raspi
 
 .PHONY: $(CUSTOM_COMMANDS) $(BOARDS) 
 
-all: ldu pcu raspi
+all: ldu pcu raspi matrix
 
 board ?=
 BIN_DIR = Bin
@@ -25,13 +25,13 @@ RGB_INCDIR:=$(RGB_LIB_DISTRIBUTION)/include
 RGB_LIBDIR:=$(RGB_LIB_DISTRIBUTION)/lib
 RGB_LIBRARY_NAME:=rgbmatrix
 RGB_LIBRARY:=$(RGB_LIBDIR)/lib$(RGB_LIBRARY_NAME).a
-LDFLAGS+=-L$(RGB_LIBDIR) -l$(RGB_LIBRARY_NAME) -lrt -lm -lpthread
+RGB_LDFLAGS+=-L$(RGB_LIBDIR) -l$(RGB_LIBRARY_NAME) -lrt -lm -lpthread
 
-$(RGB_LIBRARY):
+matrix:
 	@make -C $(RGB_LIBDIR)
 
 raspi:
-	@make -C raspi/ BUILD_DIR="$(BUILD_DIR)/raspi" --no-print-directory
+	@make -C raspi/ BUILD_DIR="$(BUILD_DIR)/raspi" RGB_LIBRARY="$(RGB_LIBRARY)" RGB_LDFLAGS="$(RGB_LDFLAGS)" --no-print-directory
 
 flash:
 	STM32_Programmer_CLI -c port=SWD -w $(BIN_FILE) 0x08000000 -v -hardRst

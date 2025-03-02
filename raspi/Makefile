@@ -1,9 +1,9 @@
-BOARD_NAME = raspi
-
 CC = gcc
 C_FLAGS = -std=c++11 -Wall -O3
 
-# Matrix Lib
+BUILD_DIR ?= ../Bin
+RGB_LIBRARY ?=
+RGB_LDFLAGS ?=
 
 
 # Our stuff
@@ -20,5 +20,5 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # # 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 
-all: $(OBJECTS) $(RGB_LIBRARY)
-	$(CC) $(C_FLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
+all:
+	$(CC) -c $(C_FLAGS) $(OBJECTS) -o $@ $(RGB_LDFLAGS)
