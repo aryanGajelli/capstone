@@ -5,6 +5,6 @@
 
 HAL_StatusTypeDef photoInit();
 
-double getRPM();
+uint16_t getRPM();
 
 #endif // __PHOTO_H__

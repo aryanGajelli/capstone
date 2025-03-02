@@ -7,13 +7,14 @@
 #include "pot.h"
 #include "stm32f4xx_hal.h"
 #include "tim.h"
+#include "photo.h"
 
 #define MOTOR_TASK_PERIOD_MS 100
 
 #define MOTOR_MIN_PULSE_WIDTH_US 1075
 #define MOTOR_MAX_PULSE_WIDTH_US 2200
 
-#define MOTOR_LIMIT_PCT 50.
+#define MOTOR_LIMIT_PCT 30.
 
 uint16_t PW_2_RPM_LUT[][2] = {
     {1565, 463},
@@ -116,7 +117,7 @@ void motorTask(void const* argument) {
     while (1) {
         potValue = getRawPotValue();
         if (potValue > UPPER_LIMIT) {
-            uprintf("Pot value above limit [%.1f%% ~ %ld]: %ld\n", MOTOR_LIMIT_PCT, UPPER_LIMIT, potValue);
+            uprintf("Pot value above limit [%.1f%% ~ %ld]: %ld, rpm: %d\n", MOTOR_LIMIT_PCT, UPPER_LIMIT, potValue, getRPM());
             vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));
             continue;
         }
@@ -124,7 +125,7 @@ void motorTask(void const* argument) {
 
         motorSetPulseWidth(pulseWidth);
         // if (HAL_GetTick() - start > 1000) {
-        uprintf("pot: %.2lf%%, mapped pw: %.3lf\n", 100.*potValue/POT_MAX_VALUE, pulseWidth);
+        uprintf("pot: %.2lf%%, mapped pw: %.3lf, rpm: %d\n", 100.*potValue/POT_MAX_VALUE, pulseWidth, getRPM());
         //     start = HAL_GetTick();
         // }
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));

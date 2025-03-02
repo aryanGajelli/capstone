@@ -17,14 +17,15 @@ HAL_StatusTypeDef photoInit() {
 }
 
 
-double getRPM() {
-    uint32_t cc1 = __HAL_TIM_GET n_COMPARE(&PHOTO_TIMER_HANDLE, PHOTO_CHANNEL_1);
+uint16_t getRPM() {
+    uint32_t cc1 = __HAL_TIM_GET_COMPARE(&PHOTO_TIMER_HANDLE, PHOTO_CHANNEL_1);
     uint32_t cc2 = __HAL_TIM_GET_COMPARE(&PHOTO_TIMER_HANDLE, PHOTO_CHANNEL_2);
 
-    double t1 = cc1 / 180000000.;
-    double t2 = cc2 / 180000000.;
-    double t = t1+t2;
+    const double F_CLK = HAL_RCC_GetSysClockFreq();
+    double on_time = cc1 / F_CLK;
+    double off_time = cc2 / F_CLK;
+    double t = on_time+off_time;
     
-    uprintf("t1: %.3f, t2: %.3f, t: %.3f, RPM: %.3f\n", t1, t2, t, 60/t);
+    // uprintf("on_time: %.3f, off_time: %.3f, t: %.3f, RPM: %.3f\n", t1, t2, t, 60/t);
     return 60 / t;
 }
