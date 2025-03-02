@@ -37,5 +37,7 @@ raspi:
 flash:
 	STM32_Programmer_CLI -c port=SWD -w $(BIN_FILE) 0x08000000 -v -hardRst
 
+run_voxel:
+	@./Bin/raspi/voxel
 clean:
 	rm -rf $(BIN_DIR)
