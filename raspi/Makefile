@@ -20,5 +20,5 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # # 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 
-all:
-	$(CC) -c $(C_FLAGS) $(OBJECTS) -o $@ $(RGB_LDFLAGS)
+voxel:
+	$(CC) $(C_SOURCES) -c $(C_FLAGS) $(OBJECTS) -o $@ $(RGB_LDFLAGS)
