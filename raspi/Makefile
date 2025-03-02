@@ -18,7 +18,7 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # $(info $(OBJECTS))
 # # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 # # 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
-RGB_LIB_DISTRIBUTION:=../rpi-rgb-led-matrix
+RGB_LIB_DISTRIBUTION:=$(abspath ../rpi-rgb-led-matrix)
 RGB_INCDIR:=$(RGB_LIB_DISTRIBUTION)/include
 RGB_LIBDIR:=$(RGB_LIB_DISTRIBUTION)/lib
 RGB_LIBRARY_NAME:=rgbmatrix
