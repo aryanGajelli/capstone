@@ -97,13 +97,13 @@ void gpio_test() {
         "1) CPU: Writing to GPIO directly in tight loop\n"
         "== Press Ctrl-C to exit.\n");
 
-    uint8_t addr = 0;
-
+    // uint8_t addr = 0;
+    uint8_t data = 0b10101010u;
     for (;;) {
-        uint8_t ctrl = 0;
-        uint8_t data = (ctrl << 5) | addr;
-        addr = (addr + 1) % 32;
-        for (uint8_t i = 0; i < 8; i++) {
+        // uint8_t ctrl = 0;
+        data = ~data;
+        // addr = (addr + 1) % 32;
+        for (uint8_t i = 0; i < 7; i++) {
             if (data & (1 << i))
                 *set_reg = 1 << DAT_PIN;
             else
