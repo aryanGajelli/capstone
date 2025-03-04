@@ -26,5 +26,5 @@ INC = -I$(INC_DIR)
 #       $(CC) -c $(C_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ $(RGB_LDFLAGS)
 
 $(BUILD_DIR)/voxel:
-    @mkdir -p $(BUILD_DIR)
-    $(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@
