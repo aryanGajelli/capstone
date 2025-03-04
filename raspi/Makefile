@@ -1,5 +1,5 @@
 CC = gcc
-C_FLAGS = -std=c11 -Wall -O3
+C_FLAGS = -std=c11 -Wall -Ofast
 
 BUILD_DIR = ../Bin/raspi
 RGB_INCDIR ?=
@@ -17,14 +17,14 @@ OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # $(info $(OBJECTS))
-# # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-# # 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+# # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
+# #     $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-INC = -I$(INC_DIR) -I$(RGB_INCDIR)
+INC = -I$(INC_DIR)
 
-# $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-# 	$(CC) -c $(C_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ $(RGB_LDFLAGS)
+# $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
+#       $(CC) -c $(C_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ $(RGB_LDFLAGS)
 
 $(BUILD_DIR)/voxel:
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@  $(RGB_LDFLAGS) 
+    @mkdir -p $(BUILD_DIR)
+    $(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@
