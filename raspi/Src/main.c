@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "led.h"
+
 // Raspberry Pi 2 or 1 ? Since this is a simple example, we don't
 // bother auto-detecting but have it a compile-time option.
 #ifndef PI_VERSION
@@ -118,7 +120,6 @@ void gpio_test() {
     }
 }
 int main(int argc, char **argv) {
-    // return run();
-    gpio_test();
+    test_led();
     return 0;
 }
