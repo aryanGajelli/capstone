@@ -33,7 +33,6 @@
 #define PERI_BASE BCM2712_PI5_PERI_BASE
 #endif
 
-#define BCM2708_PERI_BASE 0x3F000000
 #define GPIO_BASE (PERI_BASE + 0x200000) /* GPIO controller */
 
 volatile unsigned *gpio = NULL;
@@ -75,7 +74,21 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define MAT_G2_Pin (6)
 #define MAT_B2_Pin (13)
 
+#define SR_CLK_Pin (27)
+#define SR_LAT_Pin (26)
+#define SR_DAT_Pin (25)
+
 // Control pins
+
+#define sr_clk_low() GPIO_CLR(SR_CLK_Pin)
+#define sr_clk_high() GPIO_SET(SR_CLK_Pin)
+
+#define sr_lat_low() GPIO_CLR(SR_CLK_Pin)
+#define sr_lat_high() GPIO_SET(SR_CLK_Pin)
+
+#define sr_dat_low() GPIO_CLR(SR_CLK_Pin)
+#define sr_dat_high() GPIO_SET(SR_CLK_Pin)
+
 #define clk_en() GPIO_CLR(MAT_CLK_Pin)  // Active low
 #define clk_dis() GPIO_SET(MAT_CLK_Pin)
 
@@ -106,7 +119,7 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
         clk_dis();  \
     } while (0)
 
-#define selectRow(row)                       \
+#define select_row_direct(row)               \
     do {                                     \
         ((row) & 0x01) ? A_high() : A_low(); \
         ((row) & 0x02) ? B_high() : B_low(); \
@@ -152,7 +165,7 @@ void io_init() {
 
     /* mmap GPIO */
     gpio = mmap(
-        NULL,                    // Any adddress in our space will do
+        NULL,                    // Any address in our space will do
         BLOCK_SIZE,              // Map length
         PROT_READ | PROT_WRITE,  // Enable reading & writting to mapped memory
         MAP_SHARED,              // Shared with other processes
@@ -200,12 +213,32 @@ void clear_frame() {
     memset((void *)frame, 0, sizeof(frame));
 }
 
+void select_row(uint8_t row) {
+    // Clock in 8 bits
+    for (uint8_t i = 0; i < 8; i++) {
+        // Set the bit
+        if ( row & (1u << i) ) {
+            sr_dat_high();
+        } else {
+            sr_dat_low();
+        }
+
+        // Clock it in
+        sr_clk_high();
+        sr_clk_low();
+    }
+
+    // Latch out the byte
+    sr_lat_high();
+    sr_lat_low();
+}
+
 void draw_row() {
     static uint8_t matrix_row = 0;
     static uint8_t bitplane = 0;
 
     if (bitplane == 0) {
-        selectRow(matrix_row);
+        select_row(matrix_row);
     }
 
     // bitplane masks to check if r g b should be high or low
@@ -249,7 +282,7 @@ void draw_row() {
 
 void test_led() {
     io_init();
-
+    led_init();
     clear_frame();
 
     const uint8_t draw_height = 60;
