@@ -119,7 +119,24 @@ void gpio_test() {
         //      my_sleep(50000);
     }
 }
+
+void counter_test() {
+    // Prepare GPIO
+    volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    volatile uint32_t *set_reg = gpio_port + (GPIO_SET_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *clr_reg = gpio_port + (GPIO_CLR_OFFSET / sizeof(uint32_t));
+
+    const unsigned CLK_PIN = 4;
+    initialize_gpio_for_output(gpio_port, CLK_PIN);
+    
+    while (1) {
+        *set_reg = 1 << CLK_PIN;
+        *clr_reg = 1 << CLK_PIN;
+    }
+}
+
 int main(int argc, char **argv) {
-    test_led();
+    counter_test();
+    // test_led();
     return 0;
 }
