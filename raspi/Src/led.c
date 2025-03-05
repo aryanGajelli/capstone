@@ -1,18 +1,17 @@
-#include <stdio.h>
+#include "led.h"
+
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-#include "led.h"
 
 #define BITS 5
 #define PERIOD_US 50
 
-#define PAGE_SIZE (4*1024)
-#define BLOCK_SIZE (4*1024)
+#define PAGE_SIZE (4 * 1024)
+#define BLOCK_SIZE (4 * 1024)
 
 #ifndef PI_VERSION
 #define PI_VERSION 4
@@ -42,37 +41,39 @@ volatile unsigned *gpio = NULL;
 uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO_UNSAFE(x)
-#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
-#define OUT_GPIO_UNSAFE(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
+#define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
+#define OUT_GPIO_UNSAFE(g) *(gpio + ((g) / 10)) |= (1 << (((g) % 10) * 3))
 
-#define OUT_GPIO(g) INP_GPIO(g); OUT_GPIO_UNSAFE(g)
+#define OUT_GPIO(g) \
+    INP_GPIO(g);    \
+    OUT_GPIO_UNSAFE(g)
 
-#define GPIO_SET_REG *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
-#define GPIO_CLR_REG *(gpio+10) // clears bits which are 1 ignores bits which are 0
+#define GPIO_SET_REG *(gpio + 7)   // sets   bits which are 1 ignores bits which are 0
+#define GPIO_CLR_REG *(gpio + 10)  // clears bits which are 1 ignores bits which are 0
 
-#define GPIO_SET(g) ( GPIO_SET_REG = 1<<(g) )
-#define GPIO_CLR(g) ( GPIO_CLR_REG = 1<<(g) )
+#define GPIO_SET(g) (GPIO_SET_REG = 1 << (g))
+#define GPIO_CLR(g) (GPIO_CLR_REG = 1 << (g))
 
-#define GET_GPIO(g) (*(gpio+13)&(1<<g)) // 0 if LOW, (1<<g) if HIGH
+#define GET_GPIO(g) (*(gpio + 13) & (1 << g))  // 0 if LOW, (1<<g) if HIGH
 
-#define GPIO_PULL *(gpio+37) // Pull up/pull down
-#define GPIO_PULLCLK0 *(gpio+38) // Pull up/pull down clock
+#define GPIO_PULL *(gpio + 37)      // Pull up/pull down
+#define GPIO_PULLCLK0 *(gpio + 38)  // Pull up/pull down clock
 
 // TODO: Choose GPIO definitions
-#define MAT_CLK_Pin (2)
+#define MAT_CLK_Pin (4)
 #define MAT_LAT_Pin (3)
-#define MAT_OE_Pin  (4)
-#define MAT_A_Pin   (5)
-#define MAT_B_Pin   (6)
-#define MAT_C_Pin   (7)
-#define MAT_D_Pin   (8)
-#define MAT_E_Pin   (9)
-#define MAT_R1_Pin  (10)
-#define MAT_G1_Pin  (11)
-#define MAT_B1_Pin  (12)
-#define MAT_R2_Pin  (13)
-#define MAT_G2_Pin  (14)
-#define MAT_B2_Pin  (15)
+#define MAT_OE_Pin (2)
+#define MAT_A_Pin (14)
+#define MAT_B_Pin (15)
+#define MAT_C_Pin (18)
+#define MAT_D_Pin (23)
+#define MAT_E_Pin (24)
+#define MAT_R1_Pin (10)
+#define MAT_G1_Pin (9)
+#define MAT_B1_Pin (11)
+#define MAT_R2_Pin (5)
+#define MAT_G2_Pin (6)
+#define MAT_B2_Pin (13)
 
 // Control pins
 #define clk_en() GPIO_CLR(MAT_CLK_Pin)  // Active low
@@ -133,32 +134,30 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define b2_high() GPIO_SET(MAT_B2_Pin)
 #define b2_low() GPIO_CLR(MAT_B2_Pin)
 
-void delay_loop(uint8_t n) {
-    for(volatile uint8_t i = 0; i < n; i++)
-    {
-        (void) 0;
+void delay_loop(int16_t n) {
+    while (n-- > 0) {
+        __asm volatile("nop\n");
     }
 }
 
 // Set up memory region to access GPIO
-void io_init()
-{
+void io_init() {
     int mem_fd = 0;
 
     /* open /dev/mem */
-    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
+    if ((mem_fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
         printf("can't open /dev/mem \n");
         exit(-1);
     }
 
     /* mmap GPIO */
     gpio = mmap(
-        NULL,                 //Any adddress in our space will do
-        BLOCK_SIZE,           //Map length
-        PROT_READ|PROT_WRITE, //Enable reading & writting to mapped memory
-        MAP_SHARED,           //Shared with other processes
-        mem_fd,               //File to map
-        GPIO_BASE             //Offset to GPIO peripheral
+        NULL,                    // Any adddress in our space will do
+        BLOCK_SIZE,              // Map length
+        PROT_READ | PROT_WRITE,  // Enable reading & writting to mapped memory
+        MAP_SHARED,              // Shared with other processes
+        mem_fd,                  // File to map
+        GPIO_BASE                // Offset to GPIO peripheral
     );
 
     close(mem_fd);
@@ -167,7 +166,7 @@ void io_init()
         printf("mmap error %lu\n", (uint64_t)gpio);
         exit(-1);
     }
-    
+
     // Set GPIO pins to output
     OUT_GPIO(MAT_CLK_Pin);
     OUT_GPIO(MAT_LAT_Pin);
@@ -177,7 +176,7 @@ void io_init()
     OUT_GPIO(MAT_C_Pin);
     OUT_GPIO(MAT_D_Pin);
     OUT_GPIO(MAT_E_Pin);
-    
+
     OUT_GPIO(MAT_R1_Pin);
     OUT_GPIO(MAT_G1_Pin);
     OUT_GPIO(MAT_B1_Pin);
@@ -198,7 +197,7 @@ void led_init(void) {
 
 void clear_frame() {
     // Clear the LED matrix
-    memset((void*)frame, 0, sizeof(frame));
+    memset((void *)frame, 0, sizeof(frame));
 }
 
 void draw_row() {
@@ -250,7 +249,7 @@ void draw_row() {
 
 void test_led() {
     io_init();
-    
+
     clear_frame();
 
     const uint8_t draw_height = 60;
@@ -262,7 +261,7 @@ void test_led() {
             frame[y][x] = 0xFFFF;
         }
     }
-    
+
     while (1) {
         draw_row();
     }
