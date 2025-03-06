@@ -94,14 +94,14 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 
 // Control pins
 
-#define sr_clk_low() GPIO_CLR(SR_CLK_Pin)
-#define sr_clk_high() GPIO_SET(SR_CLK_Pin)
+// #define sr_clk_low() GPIO_CLR(SR_CLK_Pin)
+// #define sr_clk_high() GPIO_SET(SR_CLK_Pin)
 
-#define sr_lat_low() GPIO_CLR(SR_CLK_Pin)
-#define sr_lat_high() GPIO_SET(SR_CLK_Pin)
+// #define sr_lat_low() GPIO_CLR(SR_CLK_Pin)
+// #define sr_lat_high() GPIO_SET(SR_CLK_Pin)
 
-#define sr_dat_low() GPIO_CLR(SR_CLK_Pin)
-#define sr_dat_high() GPIO_SET(SR_CLK_Pin)
+// #define sr_dat_low() GPIO_CLR(SR_CLK_Pin)
+// #define sr_dat_high() GPIO_SET(SR_CLK_Pin)
 
 #define clk_en() GPIO_CLR(MAT_CLK_Pin)  // Active low
 #define clk_dis() GPIO_SET(MAT_CLK_Pin)
@@ -210,6 +210,17 @@ void io_init() {
     OUT_GPIO(MAT_R2_Pin);
     OUT_GPIO(MAT_G2_Pin);
     OUT_GPIO(MAT_B2_Pin);
+
+#ifdef USE_SHIFT_REGISTER
+    OUT_GPIO(SR_CLK_Pin);
+    OUT_GPIO(SR_LAT_Pin);
+    OUT_GPIO(SR_DAT_Pin);
+#endif
+
+#ifdef USE_COUNTER
+    OUT_GPIO(CNTR_CLK_Pin);
+    OUT_GPIO(CNTR_CLR_Pin);
+#endif
 }
 
 void led_init(void) {
@@ -282,25 +293,25 @@ static inline void select_row_cntr(uint8_t row) {
     curr_row = row;
 }
 
-void select_row_sr(uint8_t row) {
-    // Clock in 8 bits
-    for (uint8_t i = 0; i < 8; i++) {
-        // Set the bit
-        if (row & (1u << i)) {
-            sr_dat_high();
-        } else {
-            sr_dat_low();
-        }
+// void select_row_sr(uint8_t row) {
+//     // Clock in 8 bits
+//     for (uint8_t i = 0; i < 8; i++) {
+//         // Set the bit
+//         if (row & (1u << i)) {
+//             sr_dat_high();
+//         } else {
+//             sr_dat_low();
+//         }
 
-        // Clock it in
-        sr_clk_high();
-        sr_clk_low();
-    }
+//         // Clock it in
+//         sr_clk_high();
+//         sr_clk_low();
+//     }
 
-    // Latch out the byte
-    sr_lat_high();
-    sr_lat_low();
-}
+//     // Latch out the byte
+//     sr_lat_high();
+//     sr_lat_low();
+// }
 
 void draw_row() {
     // static uint8_t matrix_row = 0;

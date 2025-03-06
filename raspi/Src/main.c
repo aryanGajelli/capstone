@@ -146,7 +146,7 @@ void counter_test() {
 }
 
 int main(int argc, char **argv) {
-    counter_test();
-    // test_led();
+    // counter_test();
+    test_led();
     return 0;
 }
