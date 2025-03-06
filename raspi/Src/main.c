@@ -15,7 +15,7 @@
 // Raspberry Pi 2 or 1 ? Since this is a simple example, we don't
 // bother auto-detecting but have it a compile-time option.
 #ifndef PI_VERSION
-#define PI_VERSION 3
+#define PI_VERSION 4
 #endif
 
 #define BCM2708_PI1_PERI_BASE 0x20000000
@@ -127,11 +127,21 @@ void counter_test() {
     volatile uint32_t *clr_reg = gpio_port + (GPIO_CLR_OFFSET / sizeof(uint32_t));
 
     const unsigned CLK_PIN = 4;
+    const unsigned CLR_PIN = 3;
     initialize_gpio_for_output(gpio_port, CLK_PIN);
-    
-    while (1) {
+    initialize_gpio_for_output(gpio_port, CLR_PIN);
+
+#define MIN_CLK_DELAY 15
+    *clr_reg = (1 << CLR_PIN);
+    *set_reg = 1 << CLK_PIN;
+    my_sleep(MIN_CLK_DELAY);
+    *clr_reg = 1 << CLK_PIN;
+    *set_reg = 1 << CLR_PIN;
+    for (int i = 0; i < 19; i++) {
         *set_reg = 1 << CLK_PIN;
+        my_sleep(MIN_CLK_DELAY);
         *clr_reg = 1 << CLK_PIN;
+        my_sleep(MIN_CLK_DELAY);
     }
 }
 
