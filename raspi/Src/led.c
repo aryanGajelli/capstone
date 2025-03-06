@@ -17,6 +17,13 @@
 #define PI_VERSION 4
 #endif
 
+#ifndef USE_COUNTER
+#define USE_COUNTER
+#endif
+
+#define MIN_CNTR_CLK_DELAY 20
+#define MIN_RGB_CLK_DELAY 20
+
 #define BCM2708_PI1_PERI_BASE 0x20000000
 #define BCM2709_PI2_PERI_BASE 0x3F000000
 #define BCM2711_PI4_PERI_BASE 0xFE000000
@@ -74,9 +81,16 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define MAT_G2_Pin (6)
 #define MAT_B2_Pin (13)
 
+#ifdef USE_SHIFT_REGISTER
 #define SR_CLK_Pin (27)
 #define SR_LAT_Pin (26)
 #define SR_DAT_Pin (25)
+#endif
+
+#ifdef USE_COUNTER
+#define CNTR_CLK_Pin (27)
+#define CNTR_CLR_Pin MAT_R1_Pinm  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
+#endif
 
 // Control pins
 
@@ -202,9 +216,11 @@ void led_init(void) {
     // Initialize the LED matrix
     // This function should be called before any other functions
     // that interact with the LED matrix
+
     clk_dis();
     latch_dis();
     mat_dis();
+    reset_row_cntr();
     return;
 }
 
@@ -213,11 +229,64 @@ void clear_frame() {
     memset((void *)frame, 0, sizeof(frame));
 }
 
-void select_row(uint8_t row) {
+uint8_t curr_row = 0;
+
+void reset_row_cntr() {
+    // Reset the row counter
+    GPIO_CLR(CNTR_CLR_Pin);
+    GPIO_SET(CNTR_CLK_Pin);
+    delay_loop(50);
+    GPIO_CLR(CNTR_CLK_Pin);
+    GPIO_SET(CNTR_CLR_Pin);
+    delay_loop(50);
+    curr_row = 0;
+}
+
+#define pulse_cntr_clk()                \
+    do {                                \
+        GPIO_SET(CNTR_CLK_Pin);         \
+        delay_loop(MIN_CNTR_CLK_DELAY); \
+        GPIO_CLR(CNTR_CLK_Pin);         \
+        delay_loop(MIN_CNTR_CLK_DELAY); \
+    } while (0)
+
+static inline void inc_row_cntr() {
+    // Increment the row counter
+    pulse_cntr_clk();
+    curr_row = (curr_row + 1) % LED_ROW_HEIGHT;
+}
+/**
+ * Select a row on the LED matrix by incrementing the row counter
+ * to the desired row.
+ * @param row The row to select (must be between 0-31 inclusive)
+ */
+static inline void select_row_cntr(uint8_t row) {
+    if (row == curr_row) {
+        return;
+    }
+
+    if (row >= LED_ROW_HEIGHT) {
+        perror("Invalid row\n");
+        printf("Invalid row given [%d] must be < %d inclusive\n", row, LED_ROW_HEIGHT);
+        return;
+    }
+    if (row > curr_row) {
+        for (uint8_t i = 0; i < row - curr_row; row++) {
+            pulse_cntr_clk();
+        }
+    } else if (row < curr_row) {
+        for (uint8_t i = 0; i < row; i++) {
+            pulse_cntr_clk();
+        }
+    }
+    curr_row = row;
+}
+
+void select_row_sr(uint8_t row) {
     // Clock in 8 bits
     for (uint8_t i = 0; i < 8; i++) {
         // Set the bit
-        if ( row & (1u << i) ) {
+        if (row & (1u << i)) {
             sr_dat_high();
         } else {
             sr_dat_low();
@@ -234,50 +303,54 @@ void select_row(uint8_t row) {
 }
 
 void draw_row() {
-    static uint8_t matrix_row = 0;
+    // static uint8_t matrix_row = 0;
     static uint8_t bitplane = 0;
 
-    if (bitplane == 0) {
-        select_row(matrix_row);
-    }
+    // if (bitplane == 0) {
+    //     select_row(matrix_row);
+    // }
 
     // bitplane masks to check if r g b should be high or low
-    uint16_t bitplane_mask = 1u << bitplane;
-    uint16_t r_mask = bitplane_mask << (2 * BITS - 1);
-    uint16_t g_mask = bitplane_mask << (BITS - 1);
+    // uint16_t bitplane_mask = 1u << bitplane;
+    // uint16_t r_mask = bitplane_mask << (2 * BITS - 1);
+    // uint16_t g_mask = bitplane_mask << (BITS - 1);
 
     // send data serially
     for (uint8_t x = 0; x < LED_WIDTH; x++) {
-        uint16_t p1 = frame[matrix_row][x];
-        uint16_t p2 = frame[matrix_row + LED_HEIGHT / 2][x];
+        uint16_t p1 = frame[curr_row][x];
+        uint16_t p2 = frame[curr_row + LED_HEIGHT / 2][x];
 
-        (r_mask & p1) ? r1_high() : r1_low();
-        (g_mask & p1) ? g1_high() : g1_low();
-        (bitplane_mask & p1) ? b1_high() : b1_low();
+        (p1 & 0b100) ? r1_high() : r1_low();
+        (p1 & 0b010) ? g1_high() : g1_low();
+        (p1 & 0b001) ? b1_high() : b1_low();
 
-        (r_mask & p2) ? r2_high() : r2_low();
-        (g_mask & p2) ? g2_high() : g2_low();
-        (bitplane_mask & p2) ? b2_high() : b2_low();
+        (p2 & 0b100) ? r2_high() : r2_low();
+        (p2 & 0b010) ? g2_high() : g2_low();
+        (p2 & 0b001) ? b2_high() : b2_low();
 
-        pulse_clk();
+        // pulse_clk();
+        clk_en();
+        delay_loop(MIN_RGB_CLK_DELAY);
+        clk_dis();
     }
-
     // latch the data and display row
     mat_dis();
     latch_en();
+    delay_loop(MIN_RGB_CLK_DELAY);
     latch_dis();
     mat_en();
 
     // TODO: Determine appropriate delay
-    delay_loop(5);
+    // delay_loop(5);
+    inc_row_cntr();
 
-    // advance to next bitplane or row
-    if (bitplane == BITS) {
-        bitplane = 0;
-        matrix_row = (matrix_row + 1) % (LED_HEIGHT / 2);
-    } else {
-        bitplane++;
-    }
+    // // advance to next bitplane or row
+    // if (bitplane == BITS) {
+    //     bitplane = 0;
+    //     matrix_row = (matrix_row + 1) % (LED_HEIGHT / 2);
+    // } else {
+    //     bitplane++;
+    // }
 }
 
 void test_led() {
@@ -291,7 +364,7 @@ void test_led() {
     // Store a white rectangle
     for (int y = 0; y < draw_height; y++) {
         for (int x = 0; x < draw_width; x++) {
-            frame[y][x] = 0xFFFF;
+            frame[y][x] = 0b111;
         }
     }
 
