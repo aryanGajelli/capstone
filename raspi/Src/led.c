@@ -69,11 +69,11 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define MAT_CLK_Pin (4)
 #define MAT_LAT_Pin (3)
 #define MAT_OE_Pin (2)
-#define MAT_A_Pin (14)
-#define MAT_B_Pin (15)
-#define MAT_C_Pin (18)
-#define MAT_D_Pin (23)
-#define MAT_E_Pin (24)
+// #define MAT_A_Pin (14)
+// #define MAT_B_Pin (15)
+// #define MAT_C_Pin (18)
+// #define MAT_D_Pin (23)
+// #define MAT_E_Pin (24)
 #define MAT_R1_Pin (10)
 #define MAT_G1_Pin (9)
 #define MAT_B1_Pin (11)
@@ -88,8 +88,8 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #endif
 
 #ifdef USE_COUNTER
-#define CNTR_CLK_Pin (27)
-#define CNTR_CLR_Pin MAT_R1_Pinm  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
+#define CNTR_CLK_Pin (18)
+#define CNTR_CLR_Pin MAT_R1_Pin  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
 #endif
 
 // Control pins
@@ -112,20 +112,20 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define mat_en() GPIO_CLR(MAT_OE_Pin)  // Active low
 #define mat_dis() GPIO_SET(MAT_OE_Pin)
 
-#define A_low() GPIO_CLR(MAT_A_Pin)
-#define A_high() GPIO_SET(MAT_A_Pin)
+// #define A_low() GPIO_CLR(MAT_A_Pin)
+// #define A_high() GPIO_SET(MAT_A_Pin)
 
-#define B_low() GPIO_CLR(MAT_B_Pin)
-#define B_high() GPIO_SET(MAT_B_Pin)
+// #define B_low() GPIO_CLR(MAT_B_Pin)
+// #define B_high() GPIO_SET(MAT_B_Pin)
 
-#define C_low() GPIO_CLR(MAT_C_Pin)
-#define C_high() GPIO_SET(MAT_C_Pin)
+// #define C_low() GPIO_CLR(MAT_C_Pin)
+// #define C_high() GPIO_SET(MAT_C_Pin)
 
-#define D_low() GPIO_CLR(MAT_D_Pin)
-#define D_high() GPIO_SET(MAT_D_Pin)
+// #define D_low() GPIO_CLR(MAT_D_Pin)
+// #define D_high() GPIO_SET(MAT_D_Pin)
 
-#define E_low() GPIO_CLR(MAT_E_Pin)
-#define E_high() GPIO_SET(MAT_E_Pin)
+// #define E_low() GPIO_CLR(MAT_E_Pin)
+// #define E_high() GPIO_SET(MAT_E_Pin)
 
 #define pulse_clk() \
     do {            \
@@ -133,14 +133,14 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
         clk_dis();  \
     } while (0)
 
-#define select_row_direct(row)               \
-    do {                                     \
-        ((row) & 0x01) ? A_high() : A_low(); \
-        ((row) & 0x02) ? B_high() : B_low(); \
-        ((row) & 0x04) ? C_high() : C_low(); \
-        ((row) & 0x08) ? D_high() : D_low(); \
-        ((row) & 0x10) ? E_high() : E_low(); \
-    } while (0)
+// #define select_row_direct(row)               \
+//     do {                                     \
+//         ((row) & 0x01) ? A_high() : A_low(); \
+//         ((row) & 0x02) ? B_high() : B_low(); \
+//         ((row) & 0x04) ? C_high() : C_low(); \
+//         ((row) & 0x08) ? D_high() : D_low(); \
+//         ((row) & 0x10) ? E_high() : E_low(); \
+//     } while (0)
 
 // Data pins
 #define r1_high() GPIO_SET(MAT_R1_Pin)
@@ -198,11 +198,11 @@ void io_init() {
     OUT_GPIO(MAT_CLK_Pin);
     OUT_GPIO(MAT_LAT_Pin);
     OUT_GPIO(MAT_OE_Pin);
-    OUT_GPIO(MAT_A_Pin);
-    OUT_GPIO(MAT_B_Pin);
-    OUT_GPIO(MAT_C_Pin);
-    OUT_GPIO(MAT_D_Pin);
-    OUT_GPIO(MAT_E_Pin);
+    // OUT_GPIO(MAT_A_Pin);
+    // OUT_GPIO(MAT_B_Pin);
+    // OUT_GPIO(MAT_C_Pin);
+    // OUT_GPIO(MAT_D_Pin);
+    // OUT_GPIO(MAT_E_Pin);
 
     OUT_GPIO(MAT_R1_Pin);
     OUT_GPIO(MAT_G1_Pin);
