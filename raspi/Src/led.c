@@ -88,8 +88,8 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #endif
 
 #ifdef USE_COUNTER
-#define CNTR_CLK_Pin (18)
-#define CNTR_CLR_Pin MAT_R1_Pin  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
+#define CNTR_CLK_Pin (17)
+#define CNTR_CLR_Pin (4)  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
 #endif
 
 // Control pins
