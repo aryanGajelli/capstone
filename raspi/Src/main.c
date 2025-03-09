@@ -40,6 +40,8 @@
 #define GPIO_REGISTER_BASE 0x200000
 #define GPIO_SET_OFFSET 0x1C
 #define GPIO_CLR_OFFSET 0x28
+#define GPIO_SET1_OFFSET 0x20
+#define GPIO_CLR1_OFFSET 0x2C
 #define PHYSICAL_GPIO_BUS (0x7E000000 + GPIO_REGISTER_BASE)
 
 // Return a pointer to a periphery subsystem register.
@@ -148,8 +150,8 @@ void counter_test() {
 void scl0_test() {
     // Prepare GPIO
     volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
-    volatile uint32_t *set_reg = gpio_port + (GPIO_SET_OFFSET / sizeof(uint32_t));
-    volatile uint32_t *clr_reg = gpio_port + (GPIO_CLR_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *set_reg = gpio_port + (GPIO_SET1_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *clr_reg = gpio_port + (GPIO_CLR1_OFFSET / sizeof(uint32_t));
 
     const unsigned SCL0_PIN = 45;
     initialize_gpio_for_output(gpio_port, SCL0_PIN);
