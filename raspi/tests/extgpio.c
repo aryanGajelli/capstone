@@ -19,7 +19,7 @@ int main() {
 		return -1;
 	}
 
-	int req = gpiod_line_request_output(_line, "extgpio_test");
+	int req = gpiod_line_request_output(_line, "extgpio_test", 0);
 	if (req) {
 		fprintf(stderr, "error: gpiod_line_request_output\n");
 		gpiod_chip_close(_chip);
