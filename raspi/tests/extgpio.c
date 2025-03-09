@@ -19,9 +19,9 @@ int main() {
 		return -1;
 	}
 
-	int req = gpiod_line_request_input(_line, "extgpio_test");
+	int req = gpiod_line_request_output(_line, "extgpio_test");
 	if (req) {
-		fprintf(stderr, "error: gpiod_line_request_input\n");
+		fprintf(stderr, "error: gpiod_line_request_output\n");
 		gpiod_chip_close(_chip);
 		return -1;
 	}
@@ -30,8 +30,9 @@ int main() {
 
     for(int i = 0; i < 10; i++)
     {
-        int val = gpiod_line_get_value(_line);
-        printf("Line value: %d, fd: %d\n", val, fd);
+        int val = i % 2;
+        gpiod_line_set_value(_line, val);
+        printf("Line value: %d", val);
         sleep(1);
     }
 
