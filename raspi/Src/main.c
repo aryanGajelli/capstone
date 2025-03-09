@@ -153,7 +153,7 @@ void scl0_test() {
     volatile uint32_t *set_reg = gpio_port + (GPIO_SET1_OFFSET / sizeof(uint32_t));
     volatile uint32_t *clr_reg = gpio_port + (GPIO_CLR1_OFFSET / sizeof(uint32_t));
 
-    const unsigned SCL0_PIN = 45;
+    const unsigned SCL0_PIN = 45 - 32;
     initialize_gpio_for_output(gpio_port, SCL0_PIN);
 
     for (;;) {

@@ -57,8 +57,14 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #define GPIO_SET_REG *(gpio + 7)   // sets   bits which are 1 ignores bits which are 0
 #define GPIO_CLR_REG *(gpio + 10)  // clears bits which are 1 ignores bits which are 0
 
+#define GPIO1_SET_REG *(gpio + 0x20/sizeof(uint32_t))   // sets   bits which are 1 ignores bits which are 0
+#define GPIO1_CLR_REG *(gpio + 0x2c/sizeof(uint32_t))  // clears bits which are 1 ignores bits which are 0
+
 #define GPIO_SET(g) (GPIO_SET_REG = 1 << (g))
 #define GPIO_CLR(g) (GPIO_CLR_REG = 1 << (g))
+
+#define GPIO1_SET(g) (GPIO1_SET_REG = 1 << (g))
+#define GPIO1_CLR(g) (GPIO1_CLR_REG = 1 << (g))
 
 #define GET_GPIO(g) (*(gpio + 13) & (1 << g))  // 0 if LOW, (1<<g) if HIGH
 
@@ -67,8 +73,8 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 
 // TODO: Choose GPIO definitions
 #define MAT_CLK_Pin (4)
-#define MAT_LAT_Pin (3)
-#define MAT_OE_Pin (2)
+#define MAT_LAT_Pin (2)
+#define MAT_OE_Pin (18)
 // #define MAT_A_Pin (14)
 // #define MAT_B_Pin (15)
 // #define MAT_C_Pin (18)
@@ -88,8 +94,8 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 #endif
 
 #ifdef USE_COUNTER
-#define CNTR_CLK_Pin (17)
-#define CNTR_CLR_Pin (4)  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
+#define CNTR_CLK_Pin (3)
+#define CNTR_CLR_Pin (45 - 32)  // clear pin is shared but thats ok as the r1 pin is not used when selecting address and doesn't matter
 #endif
 
 // Control pins
@@ -378,7 +384,7 @@ void test_led() {
             frame[y][x] = 0b111;
         }
     }
-
+    reset_row_cntr();
     while (1) {
         draw_row();
     }
