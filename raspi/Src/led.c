@@ -45,6 +45,7 @@
 volatile unsigned *gpio = NULL;
 
 uint16_t frame[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
+uint32_t row_mask[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO_UNSAFE(x)
 #define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
@@ -376,6 +377,10 @@ void draw_row() {
         uint16_t p0_2 = frame[curr_row + LED_ROW_HEIGHT][x];
         uint16_t p1_1 = frame[curr_row + LED_ROW_HEIGHT * 2][x];
         uint16_t p1_2 = frame[curr_row + LED_ROW_HEIGHT * 3][x];
+        uint16_t p2_1 = frame[LED_ROW_HEIGHT - curr_row][x + LED_WIDTH];
+        uint16_t p2_2 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT][x + LED_WIDTH];
+        uint16_t p3_1 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT * 2][x + LED_WIDTH];
+        uint16_t p3_2 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT * 3][x + LED_WIDTH];
 
         uint32_t set_mask = 0;
         uint32_t clr_mask = 0;
@@ -440,6 +445,66 @@ void draw_row() {
         else
             clr_mask |= GPIO_BIT(p1_b2_pin);
 
+        if (p2_1 & 0b100)
+            set_mask |= GPIO_BIT(p2_r1_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_r1_pin);
+
+        if (p2_1 & 0b010)
+            set_mask |= GPIO_BIT(p2_g1_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_g1_pin);
+
+        if (p2_1 & 0b001)
+            set_mask |= GPIO_BIT(p2_b1_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_b1_pin);
+
+        if (p2_2 & 0b100)
+            set_mask |= GPIO_BIT(p2_r2_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_r2_pin);
+
+        if (p2_2 & 0b010)
+            set_mask |= GPIO_BIT(p2_g2_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_g2_pin);
+
+        if (p2_2 & 0b001)
+            set_mask |= GPIO_BIT(p2_b2_pin);
+        else
+            clr_mask |= GPIO_BIT(p2_b2_pin);
+
+        if (p3_1 & 0b100)
+            set_mask |= GPIO_BIT(p3_r1_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_r1_pin);
+
+        if (p3_1 & 0b010)
+            set_mask |= GPIO_BIT(p3_g1_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_g1_pin);
+
+        if (p3_1 & 0b001)
+            set_mask |= GPIO_BIT(p3_b1_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_b1_pin);
+
+        if (p3_2 & 0b100)
+            set_mask |= GPIO_BIT(p3_r2_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_r2_pin);
+
+        if (p3_2 & 0b010)
+            set_mask |= GPIO_BIT(p3_g2_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_g2_pin);
+
+        if (p3_2 & 0b001)
+            set_mask |= GPIO_BIT(p3_b2_pin);
+        else
+            clr_mask |= GPIO_BIT(p3_b2_pin);
+
         GPIO_SET_REG = set_mask;
         GPIO_CLR_REG = clr_mask;
         // pulse_clk();
@@ -472,12 +537,12 @@ void test_led() {
     led_init();
     clear_frame();
 
-    const uint8_t draw_height = 50;
+    const uint8_t draw_height = 100;
     const uint8_t draw_width = 30;
 
     // Store a white rectangle
     for (int y = 0; y < draw_height; y++) {
-        for (int x = 0; x < draw_width; x++) {
+        for (int x = 20; x < draw_width + 20; x++) {
             frame[y][x] = 0b111;
         }
     }
