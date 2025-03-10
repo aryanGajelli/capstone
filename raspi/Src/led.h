@@ -12,7 +12,7 @@ typedef struct {
 #define LED_WIDTH (128)
 #define LED_HEIGHT (64)
 #define LED_ROW_HEIGHT (32)
-extern uint16_t frame[LED_HEIGHT * 2][LED_WIDTH * 2];
+extern uint8_t frame[LED_HEIGHT * 2][LED_WIDTH * 2];
 
 void test_led(void);
 

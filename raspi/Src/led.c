@@ -44,7 +44,7 @@
 
 volatile unsigned *gpio = NULL;
 
-uint16_t frame[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
+uint8_t frame[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
 uint32_t row_mask[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO_UNSAFE(x)
@@ -377,10 +377,10 @@ void draw_row() {
         uint16_t p0_2 = frame[curr_row + LED_ROW_HEIGHT][x];
         uint16_t p1_1 = frame[curr_row + LED_ROW_HEIGHT * 2][x];
         uint16_t p1_2 = frame[curr_row + LED_ROW_HEIGHT * 3][x];
-        uint16_t p2_1 = frame[LED_HEIGHT*2 - curr_row][LED_WIDTH*2 - x];
-        uint16_t p2_2 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT)][LED_WIDTH*2-x];
-        uint16_t p3_1 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT * 2)][LED_WIDTH*2-x];
-        uint16_t p3_2 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT * 3)][LED_WIDTH*2-x];
+        uint16_t p2_1 = frame[LED_HEIGHT * 2 - curr_row][LED_WIDTH * 2 - x];
+        uint16_t p2_2 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT)][LED_WIDTH * 2 - x];
+        uint16_t p3_1 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT * 2)][LED_WIDTH * 2 - x];
+        uint16_t p3_2 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT * 3)][LED_WIDTH * 2 - x];
 
         uint32_t set_mask = 0;
         uint32_t clr_mask = 0;
@@ -537,12 +537,12 @@ void test_led() {
     led_init();
     clear_frame();
 
-    const uint8_t draw_height = 100;
-    const uint8_t draw_width = 220;
+    const uint8_t draw_height = 20;
+    const uint8_t draw_width = 20;
 
-    // Store a white rectangle
-    for (int y = 0; y < draw_height; y++) {
-        for (int x = 20; x < draw_width + 20; x++) {
+    // draw a color gradient
+    for (uint8_t y = 60; y < draw_height + 60; y++) {
+        for (uint8_t x = 120; x < draw_width + 120; x++) {
             frame[y][x] = 0b111;
         }
     }
