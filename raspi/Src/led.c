@@ -21,7 +21,7 @@
 #define USE_COUNTER
 #endif
 
-#define MIN_CNTR_CLK_DELAY 50
+#define MIN_CNTR_CLK_DELAY 20
 #define MIN_RGB_CLK_DELAY 50
 
 #define BCM2708_PI1_PERI_BASE 0x20000000
@@ -377,10 +377,10 @@ void draw_row() {
         uint16_t p0_2 = frame[curr_row + LED_ROW_HEIGHT][x];
         uint16_t p1_1 = frame[curr_row + LED_ROW_HEIGHT * 2][x];
         uint16_t p1_2 = frame[curr_row + LED_ROW_HEIGHT * 3][x];
-        uint16_t p2_1 = frame[LED_ROW_HEIGHT - curr_row][x + LED_WIDTH];
-        uint16_t p2_2 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT][x + LED_WIDTH];
-        uint16_t p3_1 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT * 2][x + LED_WIDTH];
-        uint16_t p3_2 = frame[LED_ROW_HEIGHT - curr_row + LED_ROW_HEIGHT * 3][x + LED_WIDTH];
+        uint16_t p2_1 = frame[LED_HEIGHT*2 - curr_row][LED_WIDTH*2 - x];
+        uint16_t p2_2 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT)][LED_WIDTH*2-x];
+        uint16_t p3_1 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT * 2)][LED_WIDTH*2-x];
+        uint16_t p3_2 = frame[LED_HEIGHT*2 - (curr_row + LED_ROW_HEIGHT * 3)][LED_WIDTH*2-x];
 
         uint32_t set_mask = 0;
         uint32_t clr_mask = 0;
@@ -538,7 +538,7 @@ void test_led() {
     clear_frame();
 
     const uint8_t draw_height = 100;
-    const uint8_t draw_width = 30;
+    const uint8_t draw_width = 220;
 
     // Store a white rectangle
     for (int y = 0; y < draw_height; y++) {
