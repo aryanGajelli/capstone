@@ -45,7 +45,8 @@
 volatile unsigned *gpio = NULL;
 
 uint8_t frame[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
-uint32_t row_mask[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
+uint32_t row_set_mask[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
+uint32_t row_clr_mask[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO_UNSAFE(x)
 #define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
@@ -372,141 +373,10 @@ void draw_row() {
     // uint16_t g_mask = bitplane_mask << (BITS - 1);
 
     // send data serially
+
     for (uint8_t x = 0; x < LED_WIDTH; x++) {
-        uint16_t p0_1 = frame[curr_row][x];
-        uint16_t p0_2 = frame[curr_row + LED_ROW_HEIGHT][x];
-        uint16_t p1_1 = frame[curr_row + LED_ROW_HEIGHT * 2][x];
-        uint16_t p1_2 = frame[curr_row + LED_ROW_HEIGHT * 3][x];
-        uint16_t p2_1 = frame[LED_HEIGHT * 2 - curr_row][LED_WIDTH * 2 - x];
-        uint16_t p2_2 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT)][LED_WIDTH * 2 - x];
-        uint16_t p3_1 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT * 2)][LED_WIDTH * 2 - x];
-        uint16_t p3_2 = frame[LED_HEIGHT * 2 - (curr_row + LED_ROW_HEIGHT * 3)][LED_WIDTH * 2 - x];
-
-        uint32_t set_mask = 0;
-        uint32_t clr_mask = 0;
-
-        if (p0_1 & 0b100)
-            set_mask |= GPIO_BIT(p0_r1_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_r1_pin);
-
-        if (p0_1 & 0b010)
-            set_mask |= GPIO_BIT(p0_g1_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_g1_pin);
-
-        if (p0_1 & 0b001)
-            set_mask |= GPIO_BIT(p0_b1_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_b1_pin);
-
-        if (p0_2 & 0b100)
-            set_mask |= GPIO_BIT(p0_r2_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_r2_pin);
-
-        if (p0_2 & 0b010)
-            set_mask |= GPIO_BIT(p0_g2_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_g2_pin);
-
-        if (p0_2 & 0b001)
-            set_mask |= GPIO_BIT(p0_b2_pin);
-        else
-            clr_mask |= GPIO_BIT(p0_b2_pin);
-
-        if (p1_1 & 0b100)
-            set_mask |= GPIO_BIT(p1_r1_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_r1_pin);
-
-        if (p1_1 & 0b010)
-            set_mask |= GPIO_BIT(p1_g1_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_g1_pin);
-
-        if (p1_1 & 0b001)
-            set_mask |= GPIO_BIT(p1_b1_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_b1_pin);
-
-        if (p1_2 & 0b100)
-            set_mask |= GPIO_BIT(p1_r2_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_r2_pin);
-
-        if (p1_2 & 0b010)
-            set_mask |= GPIO_BIT(p1_g2_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_g2_pin);
-
-        if (p1_2 & 0b001)
-            set_mask |= GPIO_BIT(p1_b2_pin);
-        else
-            clr_mask |= GPIO_BIT(p1_b2_pin);
-
-        if (p2_1 & 0b100)
-            set_mask |= GPIO_BIT(p2_r1_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_r1_pin);
-
-        if (p2_1 & 0b010)
-            set_mask |= GPIO_BIT(p2_g1_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_g1_pin);
-
-        if (p2_1 & 0b001)
-            set_mask |= GPIO_BIT(p2_b1_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_b1_pin);
-
-        if (p2_2 & 0b100)
-            set_mask |= GPIO_BIT(p2_r2_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_r2_pin);
-
-        if (p2_2 & 0b010)
-            set_mask |= GPIO_BIT(p2_g2_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_g2_pin);
-
-        if (p2_2 & 0b001)
-            set_mask |= GPIO_BIT(p2_b2_pin);
-        else
-            clr_mask |= GPIO_BIT(p2_b2_pin);
-
-        if (p3_1 & 0b100)
-            set_mask |= GPIO_BIT(p3_r1_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_r1_pin);
-
-        if (p3_1 & 0b010)
-            set_mask |= GPIO_BIT(p3_g1_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_g1_pin);
-
-        if (p3_1 & 0b001)
-            set_mask |= GPIO_BIT(p3_b1_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_b1_pin);
-
-        if (p3_2 & 0b100)
-            set_mask |= GPIO_BIT(p3_r2_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_r2_pin);
-
-        if (p3_2 & 0b010)
-            set_mask |= GPIO_BIT(p3_g2_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_g2_pin);
-
-        if (p3_2 & 0b001)
-            set_mask |= GPIO_BIT(p3_b2_pin);
-        else
-            clr_mask |= GPIO_BIT(p3_b2_pin);
-
-        GPIO_SET_REG = set_mask;
-        GPIO_CLR_REG = clr_mask;
+        GPIO_SET_REG = row_set_mask[curr_row][x];
+        GPIO_CLR_REG = row_clr_mask[curr_row][x];
         // pulse_clk();
         clk_en();
         delay_loop(MIN_RGB_CLK_DELAY);
@@ -544,6 +414,145 @@ void test_led() {
     for (uint8_t y = 60; y < draw_height + 60; y++) {
         for (uint8_t x = 120; x < draw_width + 120; x++) {
             frame[y][x] = 0b111;
+        }
+    }
+
+    for (uint8_t y = 0; y < LED_ROW_HEIGHT; y++) {
+        for (uint8_t x = 0; x < LED_WIDTH; x++) {
+            uint16_t p0_1 = frame[y][x];
+            uint16_t p0_2 = frame[y + LED_ROW_HEIGHT][x];
+            uint16_t p1_1 = frame[y + LED_ROW_HEIGHT * 2][x];
+            uint16_t p1_2 = frame[y + LED_ROW_HEIGHT * 3][x];
+            uint16_t p2_1 = frame[LED_HEIGHT * 2 - y][LED_WIDTH * 2 - x];
+            uint16_t p2_2 = frame[LED_HEIGHT * 2 - (y + LED_ROW_HEIGHT)][LED_WIDTH * 2 - x];
+            uint16_t p3_1 = frame[LED_HEIGHT * 2 - (y + LED_ROW_HEIGHT * 2)][LED_WIDTH * 2 - x];
+            uint16_t p3_2 = frame[LED_HEIGHT * 2 - (y + LED_ROW_HEIGHT * 3)][LED_WIDTH * 2 - x];
+
+            uint32_t set_mask = 0;
+            uint32_t clr_mask = 0;
+
+            if (p0_1 & 0b100)
+                set_mask |= GPIO_BIT(p0_r1_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_r1_pin);
+
+            if (p0_1 & 0b010)
+                set_mask |= GPIO_BIT(p0_g1_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_g1_pin);
+
+            if (p0_1 & 0b001)
+                set_mask |= GPIO_BIT(p0_b1_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_b1_pin);
+
+            if (p0_2 & 0b100)
+                set_mask |= GPIO_BIT(p0_r2_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_r2_pin);
+
+            if (p0_2 & 0b010)
+                set_mask |= GPIO_BIT(p0_g2_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_g2_pin);
+
+            if (p0_2 & 0b001)
+                set_mask |= GPIO_BIT(p0_b2_pin);
+            else
+                clr_mask |= GPIO_BIT(p0_b2_pin);
+
+            if (p1_1 & 0b100)
+                set_mask |= GPIO_BIT(p1_r1_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_r1_pin);
+
+            if (p1_1 & 0b010)
+                set_mask |= GPIO_BIT(p1_g1_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_g1_pin);
+
+            if (p1_1 & 0b001)
+                set_mask |= GPIO_BIT(p1_b1_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_b1_pin);
+
+            if (p1_2 & 0b100)
+                set_mask |= GPIO_BIT(p1_r2_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_r2_pin);
+
+            if (p1_2 & 0b010)
+                set_mask |= GPIO_BIT(p1_g2_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_g2_pin);
+
+            if (p1_2 & 0b001)
+                set_mask |= GPIO_BIT(p1_b2_pin);
+            else
+                clr_mask |= GPIO_BIT(p1_b2_pin);
+
+            if (p2_1 & 0b100)
+                set_mask |= GPIO_BIT(p2_r1_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_r1_pin);
+
+            if (p2_1 & 0b010)
+                set_mask |= GPIO_BIT(p2_g1_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_g1_pin);
+
+            if (p2_1 & 0b001)
+                set_mask |= GPIO_BIT(p2_b1_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_b1_pin);
+
+            if (p2_2 & 0b100)
+                set_mask |= GPIO_BIT(p2_r2_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_r2_pin);
+
+            if (p2_2 & 0b010)
+                set_mask |= GPIO_BIT(p2_g2_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_g2_pin);
+
+            if (p2_2 & 0b001)
+                set_mask |= GPIO_BIT(p2_b2_pin);
+            else
+                clr_mask |= GPIO_BIT(p2_b2_pin);
+
+            if (p3_1 & 0b100)
+                set_mask |= GPIO_BIT(p3_r1_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_r1_pin);
+
+            if (p3_1 & 0b010)
+                set_mask |= GPIO_BIT(p3_g1_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_g1_pin);
+
+            if (p3_1 & 0b001)
+                set_mask |= GPIO_BIT(p3_b1_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_b1_pin);
+
+            if (p3_2 & 0b100)
+                set_mask |= GPIO_BIT(p3_r2_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_r2_pin);
+
+            if (p3_2 & 0b010)
+                set_mask |= GPIO_BIT(p3_g2_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_g2_pin);
+
+            if (p3_2 & 0b001)
+                set_mask |= GPIO_BIT(p3_b2_pin);
+            else
+                clr_mask |= GPIO_BIT(p3_b2_pin);
+
+            row_clr_mask[y][x] = clr_mask;
+            row_set_mask[y][x] = set_mask;
         }
     }
     reset_row_cntr();
