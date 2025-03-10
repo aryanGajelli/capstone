@@ -21,8 +21,8 @@
 #define USE_COUNTER
 #endif
 
-#define MIN_CNTR_CLK_DELAY 20
-#define MIN_RGB_CLK_DELAY 20
+#define MIN_CNTR_CLK_DELAY 50
+#define MIN_RGB_CLK_DELAY 50
 
 #define BCM2708_PI1_PERI_BASE 0x20000000
 #define BCM2709_PI2_PERI_BASE 0x3F000000
@@ -44,7 +44,7 @@
 
 volatile unsigned *gpio = NULL;
 
-uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
+uint16_t frame[LED_HEIGHT * 2][LED_WIDTH * 2] = {0};
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO_UNSAFE(x)
 #define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
@@ -54,12 +54,13 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
     INP_GPIO(g);    \
     OUT_GPIO_UNSAFE(g)
 
-#define GPIO_SET_REG *(gpio + 7)   // sets   bits which are 1 ignores bits which are 0
-#define GPIO_CLR_REG *(gpio + 10)  // clears bits which are 1 ignores bits which are 0
+#define GPIO_SET_REG *(gpio + 0x1c / sizeof(uint32_t))  // sets   bits which are 1 ignores bits which are 0
+#define GPIO_CLR_REG *(gpio + 0x28 / sizeof(uint32_t))  // clears bits which are 1 ignores bits which are 0
 
-#define GPIO1_SET_REG *(gpio + 0x20/sizeof(uint32_t))   // sets   bits which are 1 ignores bits which are 0
-#define GPIO1_CLR_REG *(gpio + 0x2c/sizeof(uint32_t))  // clears bits which are 1 ignores bits which are 0
+#define GPIO1_SET_REG *(gpio + 0x20 / sizeof(uint32_t))  // sets   bits which are 1 ignores bits which are 0
+#define GPIO1_CLR_REG *(gpio + 0x2c / sizeof(uint32_t))  // clears bits which are 1 ignores bits which are 0
 
+#define GPIO_BIT(g) (1 << (g))
 #define GPIO_SET(g) (GPIO_SET_REG = 1 << (g))
 #define GPIO_CLR(g) (GPIO_CLR_REG = 1 << (g))
 
@@ -80,12 +81,33 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 // #define MAT_C_Pin (18)
 // #define MAT_D_Pin (23)
 // #define MAT_E_Pin (24)
-#define MAT_R1_Pin (10)
-#define MAT_G1_Pin (9)
-#define MAT_B1_Pin (11)
-#define MAT_R2_Pin (5)
-#define MAT_G2_Pin (6)
-#define MAT_B2_Pin (13)
+#define p0_r1_pin (17)
+#define p0_g1_pin (27)
+#define p0_b1_pin (22)
+#define p0_r2_pin (14)
+#define p0_g2_pin (15)
+#define p0_b2_pin (23)
+
+#define p1_r1_pin (10)
+#define p1_g1_pin (9)
+#define p1_b1_pin (11)
+#define p1_r2_pin (24)
+#define p1_g2_pin (25)
+#define p1_b2_pin (8)
+
+#define p2_r1_pin (0)
+#define p2_g1_pin (5)
+#define p2_b1_pin (6)
+#define p2_r2_pin (7)
+#define p2_g2_pin (1)
+#define p2_b2_pin (12)
+
+#define p3_r1_pin (13)
+#define p3_g1_pin (19)
+#define p3_b1_pin (26)
+#define p3_r2_pin (16)
+#define p3_g2_pin (20)
+#define p3_b2_pin (21)
 
 #ifdef USE_SHIFT_REGISTER
 #define SR_CLK_Pin (27)
@@ -149,23 +171,23 @@ uint16_t frame[LED_HEIGHT][LED_WIDTH] = {0};
 //     } while (0)
 
 // Data pins
-#define r1_high() GPIO_SET(MAT_R1_Pin)
-#define r1_low() GPIO_CLR(MAT_R1_Pin)
+#define r1_high() GPIO_SET(p0_r1_pin)
+#define r1_low() GPIO_CLR(p0_r1_pin)
 
-#define g1_high() GPIO_SET(MAT_G1_Pin)
-#define g1_low() GPIO_CLR(MAT_G1_Pin)
+#define g1_high() GPIO_SET(p0_g1_pin)
+#define g1_low() GPIO_CLR(p0_g1_pin)
 
-#define b1_high() GPIO_SET(MAT_B1_Pin)
-#define b1_low() GPIO_CLR(MAT_B1_Pin)
+#define b1_high() GPIO_SET(p0_b1_pin)
+#define b1_low() GPIO_CLR(p0_b1_pin)
 
-#define r2_high() GPIO_SET(MAT_R2_Pin)
-#define r2_low() GPIO_CLR(MAT_R2_Pin)
+#define r2_high() GPIO_SET(p0_r2_pin)
+#define r2_low() GPIO_CLR(p0_r2_pin)
 
-#define g2_high() GPIO_SET(MAT_G2_Pin)
-#define g2_low() GPIO_CLR(MAT_G2_Pin)
+#define g2_high() GPIO_SET(p0_g2_pin)
+#define g2_low() GPIO_CLR(p0_g2_pin)
 
-#define b2_high() GPIO_SET(MAT_B2_Pin)
-#define b2_low() GPIO_CLR(MAT_B2_Pin)
+#define b2_high() GPIO_SET(p0_b2_pin)
+#define b2_low() GPIO_CLR(p0_b2_pin)
 
 void delay_loop(int16_t n) {
     while (n-- > 0) {
@@ -204,18 +226,34 @@ void io_init() {
     OUT_GPIO(MAT_CLK_Pin);
     OUT_GPIO(MAT_LAT_Pin);
     OUT_GPIO(MAT_OE_Pin);
-    // OUT_GPIO(MAT_A_Pin);
-    // OUT_GPIO(MAT_B_Pin);
-    // OUT_GPIO(MAT_C_Pin);
-    // OUT_GPIO(MAT_D_Pin);
-    // OUT_GPIO(MAT_E_Pin);
 
-    OUT_GPIO(MAT_R1_Pin);
-    OUT_GPIO(MAT_G1_Pin);
-    OUT_GPIO(MAT_B1_Pin);
-    OUT_GPIO(MAT_R2_Pin);
-    OUT_GPIO(MAT_G2_Pin);
-    OUT_GPIO(MAT_B2_Pin);
+    OUT_GPIO(p0_r1_pin);
+    OUT_GPIO(p0_g1_pin);
+    OUT_GPIO(p0_b1_pin);
+    OUT_GPIO(p0_r2_pin);
+    OUT_GPIO(p0_g2_pin);
+    OUT_GPIO(p0_b2_pin);
+
+    OUT_GPIO(p1_r1_pin);
+    OUT_GPIO(p1_g1_pin);
+    OUT_GPIO(p1_b1_pin);
+    OUT_GPIO(p1_r2_pin);
+    OUT_GPIO(p1_g2_pin);
+    OUT_GPIO(p1_b2_pin);
+
+    OUT_GPIO(p2_r1_pin);
+    OUT_GPIO(p2_g1_pin);
+    OUT_GPIO(p2_b1_pin);
+    OUT_GPIO(p2_r2_pin);
+    OUT_GPIO(p2_g2_pin);
+    OUT_GPIO(p2_b2_pin);
+
+    OUT_GPIO(p3_r1_pin);
+    OUT_GPIO(p3_g1_pin);
+    OUT_GPIO(p3_b1_pin);
+    OUT_GPIO(p3_r2_pin);
+    OUT_GPIO(p3_g2_pin);
+    OUT_GPIO(p3_b2_pin);
 
 #ifdef USE_SHIFT_REGISTER
     OUT_GPIO(SR_CLK_Pin);
@@ -250,11 +288,11 @@ uint8_t curr_row = 0;
 
 void reset_row_cntr() {
     // Reset the row counter
-    GPIO_CLR(CNTR_CLR_Pin);
+    GPIO1_CLR(CNTR_CLR_Pin);
     GPIO_SET(CNTR_CLK_Pin);
     delay_loop(50);
     GPIO_CLR(CNTR_CLK_Pin);
-    GPIO_SET(CNTR_CLR_Pin);
+    GPIO1_SET(CNTR_CLR_Pin);
     delay_loop(50);
     curr_row = 0;
 }
@@ -334,17 +372,76 @@ void draw_row() {
 
     // send data serially
     for (uint8_t x = 0; x < LED_WIDTH; x++) {
-        uint16_t p1 = frame[curr_row][x];
-        uint16_t p2 = frame[curr_row + LED_HEIGHT / 2][x];
+        uint16_t p0_1 = frame[curr_row][x];
+        uint16_t p0_2 = frame[curr_row + LED_ROW_HEIGHT][x];
+        uint16_t p1_1 = frame[curr_row + LED_ROW_HEIGHT * 2][x];
+        uint16_t p1_2 = frame[curr_row + LED_ROW_HEIGHT * 3][x];
 
-        (p1 & 0b100) ? r1_high() : r1_low();
-        (p1 & 0b010) ? g1_high() : g1_low();
-        (p1 & 0b001) ? b1_high() : b1_low();
+        uint32_t set_mask = 0;
+        uint32_t clr_mask = 0;
 
-        (p2 & 0b100) ? r2_high() : r2_low();
-        (p2 & 0b010) ? g2_high() : g2_low();
-        (p2 & 0b001) ? b2_high() : b2_low();
+        if (p0_1 & 0b100)
+            set_mask |= GPIO_BIT(p0_r1_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_r1_pin);
 
+        if (p0_1 & 0b010)
+            set_mask |= GPIO_BIT(p0_g1_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_g1_pin);
+
+        if (p0_1 & 0b001)
+            set_mask |= GPIO_BIT(p0_b1_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_b1_pin);
+
+        if (p0_2 & 0b100)
+            set_mask |= GPIO_BIT(p0_r2_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_r2_pin);
+
+        if (p0_2 & 0b010)
+            set_mask |= GPIO_BIT(p0_g2_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_g2_pin);
+
+        if (p0_2 & 0b001)
+            set_mask |= GPIO_BIT(p0_b2_pin);
+        else
+            clr_mask |= GPIO_BIT(p0_b2_pin);
+
+        if (p1_1 & 0b100)
+            set_mask |= GPIO_BIT(p1_r1_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_r1_pin);
+
+        if (p1_1 & 0b010)
+            set_mask |= GPIO_BIT(p1_g1_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_g1_pin);
+
+        if (p1_1 & 0b001)
+            set_mask |= GPIO_BIT(p1_b1_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_b1_pin);
+
+        if (p1_2 & 0b100)
+            set_mask |= GPIO_BIT(p1_r2_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_r2_pin);
+
+        if (p1_2 & 0b010)
+            set_mask |= GPIO_BIT(p1_g2_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_g2_pin);
+
+        if (p1_2 & 0b001)
+            set_mask |= GPIO_BIT(p1_b2_pin);
+        else
+            clr_mask |= GPIO_BIT(p1_b2_pin);
+
+        GPIO_SET_REG = set_mask;
+        GPIO_CLR_REG = clr_mask;
         // pulse_clk();
         clk_en();
         delay_loop(MIN_RGB_CLK_DELAY);
@@ -375,7 +472,7 @@ void test_led() {
     led_init();
     clear_frame();
 
-    const uint8_t draw_height = 60;
+    const uint8_t draw_height = 50;
     const uint8_t draw_width = 30;
 
     // Store a white rectangle

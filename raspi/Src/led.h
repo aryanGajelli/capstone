@@ -9,10 +9,10 @@ typedef struct {
     uint8_t b;
 } pixel;
 
-#define LED_WIDTH 128
-#define LED_HEIGHT 64
-#define LED_ROW_HEIGHT 32
-extern uint16_t frame[LED_HEIGHT][LED_WIDTH];
+#define LED_WIDTH (128)
+#define LED_HEIGHT (64)
+#define LED_ROW_HEIGHT (32)
+extern uint16_t frame[LED_HEIGHT * 2][LED_WIDTH * 2];
 
 void test_led(void);
 
