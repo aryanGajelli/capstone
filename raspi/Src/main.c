@@ -190,8 +190,8 @@ void scl0_test() {
 void gclk_test() {
     volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
     volatile uint32_t *clk_gpio_port = mmap_bcm_register(CLOCK_BASE);
-    volatile uint32_t *GP_CLK0_CTL = clk_gpio_port + (GP_CLK0_CTL_OFFSET / sizeof(uint32_t));
-    volatile uint32_t *GP_CLK0_DIV = clk_gpio_port + (GP_CLK0_DIV_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *gpclk0_ctl_reg = clk_gpio_port + (GP_CLK0_CTL_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *gpclk0_div_reg = clk_gpio_port + (GP_CLK0_DIV_OFFSET / sizeof(uint32_t));
     
     // change the next 2 for different results
     int speed = 0;
@@ -223,11 +223,11 @@ void gclk_test() {
     usleep(1000);
     initialize_gpio_for_input(gpio_port, 4);
     set_gpio_alt(gpio_port, 4, 0);
-    GP_CLK0_CTL = 0x5A000000 | speed_id;  // GPCLK0 off
-    while (GP_CLK0_CTL & GZ_CLK_BUSY) {
+    *gpclk0_ctl_reg = 0x5A000000 | speed_id;  // GPCLK0 off
+    while (*gpclk0_ctl_reg & GZ_CLK_BUSY) {
     }  // Wait for BUSY low
-    GP_CLK0_DIV = 0x5A002000 | (divisor << 12);  // set DIVI
-    GP_CLK0_CTL = 0x5A000010 | speed_id;         // GPCLK0 on
+    *gpclk0_div_reg = 0x5A002000 | (divisor << 12);  // set DIVI
+    *gpclk0_ctl_reg = 0x5A000010 | speed_id;         // GPCLK0 on
     char aChar;
     printf("\nPress any key to stop test.");
     scanf("%c", &aChar);
