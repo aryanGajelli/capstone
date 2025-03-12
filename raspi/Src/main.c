@@ -37,11 +37,13 @@
 #define PAGE_SIZE 4096
 
 // ---- GPIO specific defines
+#define CLOCK_BASE 0x101000 /* Clocks */
 #define GPIO_REGISTER_BASE 0x200000
 #define GPIO_SET_OFFSET 0x1C
 #define GPIO_CLR_OFFSET 0x28
 #define GPIO_SET1_OFFSET 0x20
 #define GPIO_CLR1_OFFSET 0x2C
+
 #define PHYSICAL_GPIO_BUS (0x7E000000 + GPIO_REGISTER_BASE)
 
 // Return a pointer to a periphery subsystem register.
@@ -55,20 +57,22 @@ static void *mmap_bcm_register(off_t register_offset) {
         return NULL;
     }
 
-    uint32_t *result =
-        (uint32_t *)mmap(NULL,  // Any adddress in our space will do
-                         PAGE_SIZE,
-                         PROT_READ | PROT_WRITE,  // Enable r/w on GPIO registers.
-                         MAP_SHARED,
-                         mem_fd,                 // File to map
-                         base + register_offset  // Offset to bcm register
-        );
+    uint32_t *result = (uint32_t *)mmap(
+        NULL,  // Any adddress in our space will do
+        PAGE_SIZE,
+        PROT_READ | PROT_WRITE,  // Enable r/w on GPIO registers.
+        MAP_SHARED,
+        mem_fd,                 // File to map
+        base + register_offset  // Offset to bcm register
+    );
+
     close(mem_fd);
 
     if (result == MAP_FAILED) {
         fprintf(stderr, "mmap error %p\n", result);
         return NULL;
     }
+
     return result;
 }
 
@@ -77,6 +81,13 @@ void initialize_gpio_for_output(volatile uint32_t *gpio_registerset, int bit) {
     *(gpio_registerset + (bit / 10)) |= (1 << ((bit % 10) * 3));   // set as output.
 }
 
+void initialize_gpio_for_input(volatile uint32_t *gpio_registerset, int bit) {
+    *(gpio_registerset + (bit / 10)) &= ~(7 << ((bit % 10) * 3));  // prepare: set as input
+}
+
+void set_gpio_alt(volatile uint32_t *gpio_registerset, int bit, int alt) {
+    *(gpio_registerset + (bit / 10)) |= (alt <= 3 ? alt + 4 : alt == 4 ? 3 : 2) << ((bit % 10) * 3);
+}
 static inline void my_sleep(uint16_t nops) {
     for (uint16_t i = 0; i < nops; i++)
         __asm volatile("nop\n");
@@ -169,9 +180,65 @@ void scl0_test() {
         my_sleep(20);
     }
 }
+
+#define GZ_CLK_5MHz 0
+#define GZ_CLK_125MHz 1
+#define GZ_CLK_BUSY (1 << 7)
+#define GP_CLK0_CTL_OFFSET (0x1C)
+#define GP_CLK0_DIV_OFFSET (0x1D)
+
+void gclk_test() {
+    volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    volatile uint32_t *clk_gpio_port = mmap_bcm_register(CLOCK_BASE);
+    volatile uint32_t *GP_CLK0_CTL = clk_gpio_port + (GP_CLK0_CTL_OFFSET / sizeof(uint32_t));
+    volatile uint32_t *GP_CLK0_DIV = clk_gpio_port + (GP_CLK0_DIV_OFFSET / sizeof(uint32_t));
+    
+    // change the next 2 for different results
+    int speed = 0;
+    int divisor = 2;
+
+    int speed_id = 6;
+    int mem_fd;
+    if ((mem_fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
+        printf("\rError initializing IO. Consider using sudo.\n");
+        exit(-1);
+    }
+    if (speed < GZ_CLK_5MHz || speed > GZ_CLK_125MHz) {
+        printf("gz_clock_ena: Unsupported clock speed selected.\n");
+        printf("Supported speeds: GZ_CLK_5MHz (0) and GZ_CLK_125MHz (1).\n");
+        exit(-1);
+    }
+    if (speed == 0) {
+        speed_id = 1;
+    }
+    if (divisor < 2) {
+        printf("gz_clock_ena: Minimum divisor value is 2.\n");
+        exit(-1);
+    }
+    if (divisor > 0xfff) {
+        printf("gz_clock_ena: Maximum divisor value is %d.\n", 0xfff);
+        exit(-1);
+    }
+    close(mem_fd);  // No need to keep mem_fd open after mmap
+    usleep(1000);
+    initialize_gpio_for_input(gpio_port, 4);
+    set_gpio_alt(gpio_port, 4, 0);
+    GP_CLK0_CTL = 0x5A000000 | speed_id;  // GPCLK0 off
+    while (GP_CLK0_CTL & GZ_CLK_BUSY) {
+    }  // Wait for BUSY low
+    GP_CLK0_DIV = 0x5A002000 | (divisor << 12);  // set DIVI
+    GP_CLK0_CTL = 0x5A000010 | speed_id;         // GPCLK0 on
+    char aChar;
+    printf("\nPress any key to stop test.");
+    scanf("%c", &aChar);
+    initialize_gpio_for_input(gpio_port, 4);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     // scl0_test();
     // counter_test();
-    test_led();
+    // test_led();
+    gclk_test();
     return 0;
 }
