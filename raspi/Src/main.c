@@ -41,8 +41,10 @@
 #define GPIO_REGISTER_BASE 0x200000
 #define GPIO_SET_OFFSET 0x1C
 #define GPIO_CLR_OFFSET 0x28
+#define GPIO_READ_OFFSET 0x34
 #define GPIO_SET1_OFFSET 0x20
 #define GPIO_CLR1_OFFSET 0x2C
+#define GPIO_READ1_OFFSET 0x38
 
 #define PHYSICAL_GPIO_BUS (0x7E000000 + GPIO_REGISTER_BASE)
 
@@ -88,8 +90,8 @@ void initialize_gpio_for_input(volatile uint32_t *gpio_registerset, int bit) {
 void set_gpio_alt(volatile uint32_t *gpio_registerset, int bit, int alt) {
     *(gpio_registerset + (bit / 10)) |= (alt <= 3 ? alt + 4 : alt == 4 ? 3 : 2) << ((bit % 10) * 3);
 }
-static inline void my_sleep(uint16_t nops) {
-    for (uint16_t i = 0; i < nops; i++)
+static inline void my_sleep(uint32_t nops) {
+    for (uint32_t i = 0; i < nops; i++)
         __asm volatile("nop\n");
 }
 
@@ -235,10 +237,30 @@ void gclk_test() {
     return 0;
 }
 
+
+uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
+    return (*read_reg & (1 << bit));
+}
+
+void input_test() {
+    volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
+
+    const uint32_t PHOTO_PIN = 44 - 32;
+    initialize_gpio_for_input(gpio_port, PHOTO_PIN);
+
+    for (;;) {
+        printf("Photo pin: %d\n", read_gpio(gpio_port, PHOTO_PIN));
+        my_sleep(100000);
+    }
+}
+
+
 int main(int argc, char **argv) {
     // scl0_test();
     // counter_test();
     // test_led();
-    gclk_test();
+    // gclk_test();
+    input_test();
     return 0;
 }
