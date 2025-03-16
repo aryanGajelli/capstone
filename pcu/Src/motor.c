@@ -4,17 +4,17 @@
 #include "debug.h"
 #include "main.h"
 #include "mathUtils.h"
+#include "photo.h"
 #include "pot.h"
 #include "stm32f4xx_hal.h"
 #include "tim.h"
-#include "photo.h"
 
 #define MOTOR_TASK_PERIOD_MS 100
 
 #define MOTOR_MIN_PULSE_WIDTH_US 1075
 #define MOTOR_MAX_PULSE_WIDTH_US 2200
 
-#define MOTOR_LIMIT_PCT 30.
+#define MOTOR_LIMIT_PCT 37
 
 uint16_t PW_2_RPM_LUT[][2] = {
     {1565, 463},
@@ -125,7 +125,7 @@ void motorTask(void const* argument) {
 
         motorSetPulseWidth(pulseWidth);
         // if (HAL_GetTick() - start > 1000) {
-        uprintf("pot: %.2lf%%, mapped pw: %.3lf, rpm: %d\n", 100.*potValue/POT_MAX_VALUE, pulseWidth, getRPM());
+        uprintf("pot: %.2lf%%, mapped pw: %.3lf, rpm: %d\n", 100. * potValue / POT_MAX_VALUE, pulseWidth, getRPM());
         //     start = HAL_GetTick();
         // }
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(MOTOR_TASK_PERIOD_MS));
