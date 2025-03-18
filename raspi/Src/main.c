@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "led-matrix-c.h"
+#include "volumetric.h"
 // #include "led.h"
 // #include "vol_test.h"
 
@@ -248,7 +249,10 @@ uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
 #define PHOTO_PIN (44 - 32)
 
 // void init_photo(volatile uint32_t *read_reg) {
-
+ // Init gpio for photo sensor
+    // volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    // volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
+    // initialize_gpio_for_input(gpio_port, PHOTO_PIN);
 //     read_reg = read1_reg;
 
 //     // for (;;) {
@@ -257,73 +261,11 @@ uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
 //     // }
 // }
 
-int volumetric_test(int argc, char **argv) {
-    struct RGBLedMatrixOptions options;
-    struct RGBLedRuntimeOptions rt_options;
-    struct RGBLedMatrix *matrix;
-    struct LedCanvas *canvas;
-    int width, height;
-
-    memset(&options, 0, sizeof(options));
-    options.rows = 64;
-    options.cols = 128;
-    options.chain_length = 1;
-    options.parallel = 1;
-    options.pwm_bits = 1;
-    options.pwm_lsb_nanoseconds = 50;
-    options.pwm_dither_bits = 2;
-    options.show_refresh_rate = true;
-    options.row_address_type = 5;
-
-    memset(&rt_options, 0, sizeof(rt_options));
-    rt_options.gpio_slowdown = 4;
-
-    // Init gpio for photo sensor
-    // volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
-    // volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
-    // initialize_gpio_for_input(gpio_port, PHOTO_PIN);
-
-    /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options);
-    if (matrix == NULL)
-        return 1;
-
-    /* Let's do an example with double-buffering. We create one extra
-     * buffer onto which we draw, which is then swapped on each refresh.
-     * This is typically a good aproach for animations and such.
-     */
-    canvas = led_matrix_get_canvas(matrix);
-    if (canvas == NULL) {
-        led_matrix_delete(matrix);
-        return 1;
-    }
-
-    width = 50;
-    height = 50;
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-            led_canvas_set_pixel(canvas, x, y, 255, 255, 255);
-        }
-    }
-
-    while (true) {
-        led_matrix_swap_on_vsync(matrix, canvas);
-    }
-
-    /*
-     * Make sure to always call led_matrix_delete() in the end to reset the
-     * display. Installing signal handlers for defined exit is a good idea.
-     */
-    led_matrix_delete(matrix);
-    return 0;
-}
-
 int main(int argc, char **argv) {
     // scl0_test();
     // counter_test();
     // test_led();
     // gclk_test();
     // input_test();
-    volumetric_test(argc, argv);
-    return 0;
+    return volumetric_test(argc, argv);
 }
