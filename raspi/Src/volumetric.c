@@ -1,5 +1,6 @@
 #include "volumetric.h"
 
+#include <stdio.h>
 #include <led-matrix-c.h>
 #include <string.h>
 
@@ -22,12 +23,15 @@ int volumetric_test(int argc, char **argv) {
 
     options.pwm_bits = 1;
     options.pwm_dither_bits = 2;
-    options.pwm_lsb_nanoseconds = 50;
+    options.pwm_lsb_nanoseconds = 20;
 
-    options.show_refresh_rate = true;
+    // options.show_refresh_rate = true;
 
     memset(&rt_options, 0, sizeof(rt_options));
     rt_options.gpio_slowdown = 3;
+
+    volatile uint32_t *read_reg = NULL;
+    init_photo(read_reg);
 
     /* This supports all the led commandline options. Try --led-help */
     matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options);
@@ -51,7 +55,11 @@ int volumetric_test(int argc, char **argv) {
             led_canvas_set_pixel(matrix, x, y, 255, 0, 0);
         }
     }
-    while (true);
+
+    while (true) {
+        bool sync = (*read_reg) & (1UL << PHOTO_PIN);
+        printf("%d\n", sync);
+    }
 
     /*
      * Make sure to always call led_matrix_delete() in the end to reset the

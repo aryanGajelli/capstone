@@ -246,20 +246,16 @@ void gclk_test() {
 uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
     return (*read_reg & (1 << bit));
 }
-#define PHOTO_PIN (44 - 32)
 
-// void init_photo(volatile uint32_t *read_reg) {
+
+void init_photo(volatile uint32_t *read_reg) {
  // Init gpio for photo sensor
-    // volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
-    // volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
-    // initialize_gpio_for_input(gpio_port, PHOTO_PIN);
-//     read_reg = read1_reg;
+    volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
+    initialize_gpio_for_input(gpio_port, PHOTO_PIN);
+    read_reg = read1_reg;
+}
 
-//     // for (;;) {
-//     //     printf("Photo pin: %d\n", read_gpio(gpio_port, PHOTO_PIN));
-//     //     my_sleep(100000);
-//     // }
-// }
 
 int main(int argc, char **argv) {
     // scl0_test();
@@ -267,5 +263,6 @@ int main(int argc, char **argv) {
     // test_led();
     // gclk_test();
     // input_test();
+    
     return volumetric_test(argc, argv);
 }
