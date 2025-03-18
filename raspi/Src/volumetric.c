@@ -5,7 +5,7 @@
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
     struct RGBLedMatrix *matrix;
-    struct LedCanvas *offscreen_canvas;
+    struct LedCanvas *canvas;
     int width, height;
     int x, y, i;
 
@@ -22,9 +22,10 @@ int volumetric_test(int argc, char **argv) {
      * buffer onto which we draw, which is then swapped on each refresh.
      * This is typically a good aproach for animations and such.
      */
-    offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
+    // offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
 
-    led_canvas_get_size(offscreen_canvas, &width, &height);
+    // led_canvas_get_size(offscreen_canvas, &width, &height);
+    canvas = led_matrix_get_canvas(matrix);
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
             width, height, options.hardware_mapping);
@@ -32,7 +33,7 @@ int volumetric_test(int argc, char **argv) {
     for (i = 0; i < 1000; ++i) {
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
-                led_canvas_set_pixel(offscreen_canvas, x, y, i & 0xff, x, y);
+                led_canvas_set_pixel(canvas, x, y, i & 0xff, x, y);
             }
         }
 
@@ -41,7 +42,7 @@ int volumetric_test(int argc, char **argv) {
          * we get back the unused buffer to which we'll draw in the next
          * iteration.
          */
-        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+        // offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
     }
 
     /*
