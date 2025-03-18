@@ -20,7 +20,7 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 # #     $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-INC = -I$(INC_DIR)
+INC = -I$(INC_DIR) -I$(RGB_INCDIR)
 
 # $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 #       $(CC) -c $(C_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ $(RGB_LDFLAGS)

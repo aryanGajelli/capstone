@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,8 +12,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "led.h"
-#include "vol_test.h"
+#include "led-matrix-c.h"
+// #include "led.h"
+// #include "vol_test.h"
 
 // Raspberry Pi 2 or 1 ? Since this is a simple example, we don't
 // bother auto-detecting but have it a compile-time option.
@@ -89,7 +92,9 @@ void initialize_gpio_for_input(volatile uint32_t *gpio_registerset, int bit) {
 }
 
 void set_gpio_alt(volatile uint32_t *gpio_registerset, int bit, int alt) {
-    *(gpio_registerset + (bit / 10)) |= (alt <= 3 ? alt + 4 : alt == 4 ? 3 : 2) << ((bit % 10) * 3);
+    *(gpio_registerset + (bit / 10)) |= (alt <= 3 ? alt + 4 : alt == 4 ? 3
+                                                                       : 2)
+                                        << ((bit % 10) * 3);
 }
 static inline void my_sleep(uint32_t nops) {
     for (uint32_t i = 0; i < nops; i++)
@@ -195,7 +200,7 @@ void gclk_test() {
     volatile uint32_t *clk_gpio_port = mmap_bcm_register(CLOCK_BASE);
     volatile uint32_t *gpclk0_ctl_reg = clk_gpio_port + (GP_CLK0_CTL_OFFSET / sizeof(uint32_t));
     volatile uint32_t *gpclk0_div_reg = clk_gpio_port + (GP_CLK0_DIV_OFFSET / sizeof(uint32_t));
-    
+
     // change the next 2 for different results
     int speed = 0;
     int divisor = 2;
@@ -235,127 +240,76 @@ void gclk_test() {
     printf("\nPress any key to stop test.");
     scanf("%c", &aChar);
     initialize_gpio_for_input(gpio_port, 4);
-    return 0;
 }
-
 
 uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
     return (*read_reg & (1 << bit));
 }
+#define PHOTO_PIN (44 - 32)
 
-void input_test() {
-    volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
-    volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
+// void init_photo(volatile uint32_t *read_reg) {
 
-    const uint32_t PHOTO_PIN = 44 - 32;
-    initialize_gpio_for_input(gpio_port, PHOTO_PIN);
+//     read_reg = read1_reg;
 
-    for (;;) {
-        printf("Photo pin: %d\n", read_gpio(gpio_port, PHOTO_PIN));
-        my_sleep(100000);
-    }
-}
+//     // for (;;) {
+//     //     printf("Photo pin: %d\n", read_gpio(gpio_port, PHOTO_PIN));
+//     //     my_sleep(100000);
+//     // }
+// }
 
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
     struct RGBLedMatrix *matrix;
-    struct LedCanvas *offscreen_canvas;
+    struct LedCanvas *canvas;
     int width, height;
-    int x, y, i;
-  
+
     memset(&options, 0, sizeof(options));
     options.rows = 64;
     options.cols = 128;
     options.chain_length = 1;
-    options.parallel = 3;
+    options.parallel = 1;
     options.pwm_bits = 1;
-    options.pwm_lsb_nanoseconds = 20;
+    options.pwm_lsb_nanoseconds = 50;
     options.pwm_dither_bits = 2;
     options.show_refresh_rate = true;
+    options.row_address_type = 5;
 
     memset(&rt_options, 0, sizeof(rt_options));
-    rt_options.gpio_slowdown = 3;
+    rt_options.gpio_slowdown = 4;
 
-    static uint32_t *gpio_reg;
+    // Init gpio for photo sensor
+    // volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
+    // volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
+    // initialize_gpio_for_input(gpio_port, PHOTO_PIN);
 
     /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options, &gpio_reg);
+    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options);
     if (matrix == NULL)
-      return 1;
-  
+        return 1;
+
     /* Let's do an example with double-buffering. We create one extra
      * buffer onto which we draw, which is then swapped on each refresh.
      * This is typically a good aproach for animations and such.
      */
-    offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
-  
-    led_canvas_get_size(offscreen_canvas, &width, &height);
-  
-    fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
-            width, height, options.hardware_mapping);
-    
-    const int rows_per_panel = 64;
-    const float rpm = 800;
-    const float us_per_rev = 1e6 * 60 / rpm;
-    
-    const int cube_dim = 50;
-    int slice = 0;
-    const int num_slices = 100;
-    const float slice_to_rad = 2 * 3.14159265 / num_slices;
+    canvas = led_matrix_get_canvas(matrix);
+    if (canvas == NULL) {
+        led_matrix_delete(matrix);
+        return 1;
+    }
 
-    const uint32_t us_per_slice = us_per_rev / num_slices; // Microseconds per slice
-
-    // Angles that align with a square's diagonals
-    const float diag1 = 0.7854; // 45 degrees
-    const float diag2 = diag1 * 3;
-    const float diag3 = diag1 * 5;
-    const float diag4 = diag1 * 7;
-
-    bool prev_sync = false;
+    width = 50;
+    height = 50;
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            led_canvas_set_pixel(canvas, x, y, 255, 255, 255);
+        }
+    }
 
     while (true) {
-        // Wait until panel has rotated to next slice
-        usleep(us_per_slice/10);
-        led_canvas_clear(offscreen_canvas);
-        int ret = usleep(10*us_per_slice/9);
-        if (ret) {
-            printf("___USLEEP ERROR___ value: %d\n", ret);
-        }
-
-
-        bool read_sync = (uint32_t)(*gpio_reg) & (1UL << (44-32));
-        if (!prev_sync && read_sync) {
-        slice = 0;
-        //printf("--SYNC--");
-        }
-        prev_sync = read_sync;
-        
-        float angle = slice * slice_to_rad;
-        int height = cube_dim;
-        int width = 0;
-
-        // Calculate width of cube cross-section
-        // Adjust formula when crossing the cubes's diagonals
-        if ((diag1 < angle && angle < diag2) || (diag3 < angle && angle < diag4)) {
-        width = abs(cube_dim / sinf(angle));
-        }
-        else {
-        width = abs(cube_dim / cosf(angle));
-        }
-        
-        // Display red cube cross-section
-        height = 192;
-        int offset_x = (128 - width)/2;
-        int offset_y = 0;//(canvas_height - height)/2;
-        for(int x = 0; x < width/2; x++) {
-            for (int y = 0; y < height; y++) {
-                led_canvas_set_pixel(offscreen_canvas, x + offset_x, y + offset_y, 255, 0, 0);
-            }
-        }
-        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+        led_matrix_swap_on_vsync(matrix, canvas);
     }
-  
+
     /*
      * Make sure to always call led_matrix_delete() in the end to reset the
      * display. Installing signal handlers for defined exit is a good idea.
