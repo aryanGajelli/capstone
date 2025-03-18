@@ -26,15 +26,16 @@ int volumetric_test(int argc, char **argv) {
     options.pwm_lsb_nanoseconds = 20;
 
     // options.show_refresh_rate = true;
+    options.disable_busy_waiting = true;
 
     memset(&rt_options, 0, sizeof(rt_options));
     rt_options.gpio_slowdown = 3;
 
     volatile uint32_t *read_reg = NULL;
-    init_photo(read_reg);
+    // init_photo(read_reg);
 
     /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options);
+    matrix = led_matrix_create_from_ext(&options, &rt_options, &read_reg);
     if (matrix == NULL)
         return 1;
 
@@ -58,7 +59,7 @@ int volumetric_test(int argc, char **argv) {
 
     while (true) {
         bool sync = (*read_reg) & (1UL << PHOTO_PIN);
-        printf("%d\n", sync);
+        // printf("%d\n", sync);
     }
 
     /*
