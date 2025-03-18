@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "led.h"
+#include "vol_test.h"
 
 // Raspberry Pi 2 or 1 ? Since this is a simple example, we don't
 // bother auto-detecting but have it a compile-time option.
@@ -255,12 +256,71 @@ void input_test() {
     }
 }
 
+int volumetric_test(int argc, char **argv) {
+    struct RGBLedMatrixOptions options;
+    struct RGBLedRuntimeOptions rt_options;
+    struct RGBLedMatrix *matrix;
+    struct LedCanvas *offscreen_canvas;
+    int width, height;
+    int x, y, i;
+  
+    memset(&options, 0, sizeof(options));
+    options.rows = 192;
+    options.chain_length = 1;
+    options.parallel = 3;
+    options.pwm_bits = 1;
+    options.pwm_lsb_nanoseconds = 20;
+    options.pwm_dither_bits = 2;
+    options.show_refresh_rate = true;
+
+    memset(&rt_options, 0, sizeof(rt_options));
+    rt_options.gpio_slowdown = 3;
+
+    /* This supports all the led commandline options. Try --led-help */
+    matrix = led_matrix_create_from_options(&options, &argc, &argv);
+    if (matrix == NULL)
+      return 1;
+  
+    /* Let's do an example with double-buffering. We create one extra
+     * buffer onto which we draw, which is then swapped on each refresh.
+     * This is typically a good aproach for animations and such.
+     */
+    offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
+  
+    led_canvas_get_size(offscreen_canvas, &width, &height);
+  
+    fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
+            width, height, options.hardware_mapping);
+  
+    for (i = 0; i < 1000; ++i) {
+      for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+          led_canvas_set_pixel(offscreen_canvas, x, y, i & 0xff, x, y);
+        }
+      }
+  
+      /* Now, we swap the canvas. We give swap_on_vsync the buffer we
+       * just have drawn into, and wait until the next vsync happens.
+       * we get back the unused buffer to which we'll draw in the next
+       * iteration.
+       */
+      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+    }
+  
+    /*
+     * Make sure to always call led_matrix_delete() in the end to reset the
+     * display. Installing signal handlers for defined exit is a good idea.
+     */
+    led_matrix_delete(matrix);
+    return 0;
+}
 
 int main(int argc, char **argv) {
     // scl0_test();
     // counter_test();
     // test_led();
     // gclk_test();
-    input_test();
+    // input_test();
+    volumetric_test(argc, argv);
     return 0;
 }

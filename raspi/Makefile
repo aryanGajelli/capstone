@@ -27,4 +27,4 @@ INC = -I$(INC_DIR)
 
 $(BUILD_DIR)/voxel:
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@
+	$(CC) $(C_SOURCES) $(INC) $(C_FLAGS) -o $@  $(RGB_LDFLAGS)
