@@ -1,20 +1,36 @@
+#include "volumetric.h"
+
 #include <led-matrix-c.h>
 #include <string.h>
-#include "volumetric.h"
 
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
+    struct RGBLedRuntimeOptions rt_options;
     struct RGBLedMatrix *matrix;
-    struct LedCanvas *canvas;
+    struct LedCanvas *offscreen_canvas;
     int width, height;
     int x, y, i;
 
     memset(&options, 0, sizeof(options));
-    options.rows = 32;
+    options.rows = 64;
+    options.cols = 128;
     options.chain_length = 1;
+    options.parallel = 3;
+
+    options.hardware_mapping = "counter";
+    options.row_address_type = 5;
+
+    options.pwm_bits = 1;
+    options.pwm_dither_bits = 2;
+    options.pwm_lsb_nanoseconds = 50;
+
+    options.show_refresh_rate = true;
+
+    memset(&rt_options, 0, sizeof(rt_options));
+    rt_options.gpio_slowdown = 3;
 
     /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_options(&options, &argc, &argv);
+    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options);
     if (matrix == NULL)
         return 1;
 
@@ -22,28 +38,20 @@ int volumetric_test(int argc, char **argv) {
      * buffer onto which we draw, which is then swapped on each refresh.
      * This is typically a good aproach for animations and such.
      */
-    // offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
+    offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
 
     // led_canvas_get_size(offscreen_canvas, &width, &height);
-    canvas = led_matrix_get_canvas(matrix);
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
             width, height, options.hardware_mapping);
-
-    for (i = 0; i < 1000; ++i) {
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width; ++x) {
-                led_canvas_set_pixel(canvas, x, y, i & 0xff, x, y);
-            }
+    height = 50;
+    width = 50;
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            led_canvas_set_pixel(matrix, x, y, 255, 0, 0);
         }
-
-        /* Now, we swap the canvas. We give swap_on_vsync the buffer we
-         * just have drawn into, and wait until the next vsync happens.
-         * we get back the unused buffer to which we'll draw in the next
-         * iteration.
-         */
-        // offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
     }
+    while (true);
 
     /*
      * Make sure to always call led_matrix_delete() in the end to reset the
