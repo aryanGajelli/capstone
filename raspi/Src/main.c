@@ -265,7 +265,8 @@ int volumetric_test(int argc, char **argv) {
     int x, y, i;
   
     memset(&options, 0, sizeof(options));
-    options.rows = 192;
+    options.rows = 64;
+    options.cols = 128;
     options.chain_length = 1;
     options.parallel = 3;
     options.pwm_bits = 1;
@@ -276,8 +277,10 @@ int volumetric_test(int argc, char **argv) {
     memset(&rt_options, 0, sizeof(rt_options));
     rt_options.gpio_slowdown = 3;
 
+    static uint32_t *gpio_reg;
+
     /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_options(&options, &argc, &argv);
+    matrix = led_matrix_create_from_options_and_rt_options(&options, &rt_options, &gpio_reg);
     if (matrix == NULL)
       return 1;
   
@@ -291,20 +294,66 @@ int volumetric_test(int argc, char **argv) {
   
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
             width, height, options.hardware_mapping);
-  
-    for (i = 0; i < 1000; ++i) {
-      for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-          led_canvas_set_pixel(offscreen_canvas, x, y, i & 0xff, x, y);
+    
+    const int rows_per_panel = 64;
+    const float rpm = 800;
+    const float us_per_rev = 1e6 * 60 / rpm;
+    
+    const int cube_dim = 50;
+    int slice = 0;
+    const int num_slices = 100;
+    const float slice_to_rad = 2 * 3.14159265 / num_slices;
+
+    const uint32_t us_per_slice = us_per_rev / num_slices; // Microseconds per slice
+
+    // Angles that align with a square's diagonals
+    const float diag1 = 0.7854; // 45 degrees
+    const float diag2 = diag1 * 3;
+    const float diag3 = diag1 * 5;
+    const float diag4 = diag1 * 7;
+
+    bool prev_sync = false;
+
+    while (true) {
+        // Wait until panel has rotated to next slice
+        usleep(us_per_slice/10);
+        led_canvas_clear(offscreen_canvas);
+        int ret = usleep(10*us_per_slice/9);
+        if (ret) {
+            printf("___USLEEP ERROR___ value: %d\n", ret);
         }
-      }
-  
-      /* Now, we swap the canvas. We give swap_on_vsync the buffer we
-       * just have drawn into, and wait until the next vsync happens.
-       * we get back the unused buffer to which we'll draw in the next
-       * iteration.
-       */
-      offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
+
+
+        bool read_sync = (uint32_t)(*gpio_reg) & (1UL << (44-32));
+        if (!prev_sync && read_sync) {
+        slice = 0;
+        //printf("--SYNC--");
+        }
+        prev_sync = read_sync;
+        
+        float angle = slice * slice_to_rad;
+        int height = cube_dim;
+        int width = 0;
+
+        // Calculate width of cube cross-section
+        // Adjust formula when crossing the cubes's diagonals
+        if ((diag1 < angle && angle < diag2) || (diag3 < angle && angle < diag4)) {
+        width = abs(cube_dim / sinf(angle));
+        }
+        else {
+        width = abs(cube_dim / cosf(angle));
+        }
+        
+        // Display red cube cross-section
+        height = 192;
+        int offset_x = (128 - width)/2;
+        int offset_y = 0;//(canvas_height - height)/2;
+        for(int x = 0; x < width/2; x++) {
+            for (int y = 0; y < height; y++) {
+                led_canvas_set_pixel(offscreen_canvas, x + offset_x, y + offset_y, 255, 0, 0);
+            }
+        }
+        offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
     }
   
     /*
