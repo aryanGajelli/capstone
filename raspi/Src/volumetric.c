@@ -55,6 +55,7 @@ int volumetric_test(int argc, char **argv) {
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
     const int rows_per_panel = 64;
+    const int cols_per_panel = 128;
 
     // --------- Slicing Setup -----------
     const float rpm = 600;
@@ -70,7 +71,7 @@ int volumetric_test(int argc, char **argv) {
     const float diag3 = diag1 * 5;
     const float diag4 = diag1 * 7;
 
-    const int cube_width = 120;
+    const int cube_width = 50;
     const int cube_height = 50;
 
     bool rising_edge = false;
@@ -103,21 +104,21 @@ int volumetric_test(int argc, char **argv) {
             width = fabsf(cube_width / cosf(angle));
         }
 
-        // int offset_x = 128 - width / 2;
-        // int offset_y = (rows_per_panel - cube_height) / 2;
-        for (int x = 0; x < 128; x++) {
-            for (int y = 0; y < 192; y++) {
-                led_canvas_set_pixel(canvas, x , y , 255, 255, 255);
+        int offset_x = cols_per_panel/2 - width / 2;
+        int offset_y = (rows_per_panel - cube_height) / 2;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < cube_height; y++) {
+                led_canvas_set_pixel(canvas, x + offset_x , y + offset_y , 255, 255, 255);
             }
         }
 
         // offset_x = 128 - width / 2;
-        // offset_y = rows_per_panel * 2 + (rows_per_panel - cube_height) / 2;
-        // for (int x = 0; x < width / 2; x++) {
-        //     for (int y = 0; y < cube_height; y++) {
-        //         led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
-        //     }
-        // }
+        offset_y = rows_per_panel  + (rows_per_panel - cube_height) / 2;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < cube_height; y++) {
+                led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
+            }
+        }
         slice = (slice + 1) % num_slices;
         uint32_t duration_us = get_micros_counter() - start;
         if (duration_us > us_per_slice)
