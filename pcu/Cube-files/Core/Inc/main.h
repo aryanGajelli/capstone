@@ -59,6 +59,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
+#define B1_EXTI_IRQn EXTI15_10_IRQn
 #define PHOTO_IN_Pin GPIO_PIN_0
 #define PHOTO_IN_GPIO_Port GPIOA
 #define ENCODER_B_Pin GPIO_PIN_1
