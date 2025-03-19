@@ -2,6 +2,7 @@
 
 #include <led-matrix-c.h>
 #include <math.h>
+#include <mathc.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -61,7 +62,7 @@ int volumetric_test(int argc, char **argv) {
     const float rpm = 600;
     int num_slices = 128;
     int slice = 0;
-    const float slice_to_rad = 2 * M_PI / num_slices;
+    const float slice_to_rad = 2 * MPI / num_slices;
     const float us_per_rev = 1e6 * 60 / rpm;
     const uint32_t us_per_slice = us_per_rev / num_slices;  // Microseconds per slice
 
