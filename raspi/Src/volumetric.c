@@ -57,8 +57,8 @@ int volumetric_test(int argc, char **argv) {
     const int rows_per_panel = 64;
 
     // --------- Slicing Setup -----------
-    const float rpm = 800;
-    int num_slices = 64;
+    const float rpm = 600;
+    int num_slices = 128;
     int slice = 0;
     const float slice_to_rad = 2 * M_PI / num_slices;
     const float us_per_rev = 1e6 * 60 / rpm;
@@ -103,21 +103,21 @@ int volumetric_test(int argc, char **argv) {
             width = fabsf(cube_width / cosf(angle));
         }
 
-        int offset_x = 128 - width / 2;
-        int offset_y = (rows_per_panel - cube_height) / 2;
-        for (int x = 0; x < width / 2; x++) {
-            for (int y = 0; y < cube_height; y++) {
-                led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
+        // int offset_x = 128 - width / 2;
+        // int offset_y = (rows_per_panel - cube_height) / 2;
+        for (int x = 0; x < 128; x++) {
+            for (int y = 0; y < 192; y++) {
+                led_canvas_set_pixel(canvas, x , y , 255, 255, 255);
             }
         }
 
-        offset_x = 128 - width / 2;
-        offset_y = rows_per_panel * 2 + (rows_per_panel - cube_height) / 2;
-        for (int x = 0; x < width / 2; x++) {
-            for (int y = 0; y < cube_height; y++) {
-                led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
-            }
-        }
+        // offset_x = 128 - width / 2;
+        // offset_y = rows_per_panel * 2 + (rows_per_panel - cube_height) / 2;
+        // for (int x = 0; x < width / 2; x++) {
+        //     for (int y = 0; y < cube_height; y++) {
+        //         led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
+        //     }
+        // }
         slice = (slice + 1) % num_slices;
         uint32_t duration_us = get_micros_counter() - start;
         if (duration_us > us_per_slice)
