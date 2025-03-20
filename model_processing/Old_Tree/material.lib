@@ -1,0 +1,34 @@
+# Aspose.3D Wavefront OBJ Exporter
+# Copyright 2004-2025 Aspose Pty Ltd.
+# File created: 03/20/2025 22:29:17
+
+newmtl oldtrunk
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd oldtrunk_diffuse.jpg
+	norm oldtrunk_normal.jpg
+newmtl old_treetop
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd old_treetop_diffuse_cutoff146.png
+	norm old_treetop_normal.jpg
+newmtl leaf_old_tree
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd leaf_old_tree_diffuse_cutoff178.png
+	norm leaf_old_tree_normal.jpg

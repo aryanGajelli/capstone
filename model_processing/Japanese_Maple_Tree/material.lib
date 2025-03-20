@@ -1,0 +1,37 @@
+# Aspose.3D Wavefront OBJ Exporter
+# Copyright 2004-2025 Aspose Pty Ltd.
+# File created: 03/20/2025 22:17:14
+
+newmtl Tree_Mat
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd Tree_Mat_baseColor.jpg
+	map_Pr Tree_Mat_metallicRoughness_metal.jpg
+	map_Pm Tree_Mat_metallicRoughness_metal.jpg
+	norm Tree_Mat_normal.jpg
+newmtl Leaves
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd Leaves_baseColor.png
+	map_Pr Leaves_metallicRoughness_metal.jpg
+	map_Pm Leaves_metallicRoughness_metal.jpg
+	norm Leaves_normal.jpg
+newmtl aiStandardSurface2
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0.6
+	Pm 0
+	d 1
+	Tr 0
+	map_Kd aiStandardSurface2_baseColor.png
