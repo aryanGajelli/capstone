@@ -46,7 +46,7 @@ void slicemap_init() {
         }
 
         i_p = 1; // Back panel
-        d = PANEL_BACK_OFFSET;  // Offset
+        d = -PANEL_BACK_OFFSET;  // Offset
         for (int i_w = 0; i_w < PANEL_WIDTH; i_w++)
         {
             // Position of point in frame p
