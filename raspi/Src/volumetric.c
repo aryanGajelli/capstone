@@ -76,7 +76,7 @@ int volumetric_test(int argc, char **argv) {
     uint32_t last_rising_edge = get_micros_counter();
     while (true) {
         start = get_micros_counter();
-        led_canvas_clear(canvas);
+        // led_canvas_clear(canvas);
         getRisingFallingPhoto(read_reg, &rising_edge, &falling_edge);
         if (rising_edge) {
             slice = 0;
@@ -102,8 +102,10 @@ int volumetric_test(int argc, char **argv) {
 
         slice = (slice + 1) % SLICE_COUNT;
         uint32_t duration_us = get_micros_counter() - start;
-        if (duration_us > us_per_slice)
+        if (duration_us > us_per_slice) {
+            fprintf(stderr, "Slice took too long: %d\n", duration_us);
             duration_us = 0;
+        }
 
         usleep(us_per_slice - duration_us);
     }

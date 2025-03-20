@@ -13,8 +13,7 @@ void volume_draw_plane() {
         }
     }
 
-    int plane_z = 10;
-    for (int z = 10; z < 20; z++) {
+    for (int z = 50; z < 100; z++) {
         for (int y = 0; y < 50; y++) {
             for (int x = 0; x < 50; x++) {
                 volume[z][y + PANEL_WIDTH / 2][x + PANEL_WIDTH / 2] = 0b111;
