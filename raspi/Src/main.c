@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "led-matrix-c.h"
+#include "gpio.h"
 #include "volumetric.h"
 // #include "led.h"
 // #include "vol_test.h"
@@ -248,15 +248,13 @@ uint32_t read_gpio(volatile uint32_t *read_reg, int bit) {
 }
 
 
-void init_photo(volatile uint32_t *read_reg) {
- // Init gpio for photo sensor
+
+
+void testRiseFall() {
     volatile uint32_t *gpio_port = mmap_bcm_register(GPIO_REGISTER_BASE);
     volatile uint32_t *read1_reg = gpio_port + (GPIO_READ1_OFFSET / sizeof(uint32_t));
     initialize_gpio_for_input(gpio_port, PHOTO_PIN);
-    read_reg = read1_reg;
 }
-
-
 int main(int argc, char **argv) {
     // scl0_test();
     // counter_test();
