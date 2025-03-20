@@ -13,6 +13,7 @@ voxel_2D_t slice_map[SLICE_COUNT][PANEL_WIDTH][PANEL_COUNT];
  *          finds the closest cylindrical coordinates to the cartestian coordinates and records that index
  */
 void slicemap_init() {
+    printf("Initializing slicemap --- ");
     double offsets[PANEL_COUNT] = {PANEL_BACK_OFFSET, PANEL_FRONT_OFFSET, PANEL_FRONT_OFFSET};
 
     for (int slice = 0; slice < SLICE_COUNT; slice++) {
@@ -41,4 +42,5 @@ void slicemap_init() {
             }
         }
     }
+    printf(" done\n");
 }

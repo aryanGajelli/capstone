@@ -88,13 +88,15 @@ int volumetric_test(int argc, char **argv) {
             slice = SLICE_COUNT / 2;
         }
 
-        for (int z = 0; z < PANEL_HEIGHT * 3; z++) {
-            int panel_index = z / PANEL_HEIGHT;
+        for (int panel_z = 0; panel_z < PANEL_HEIGHT * PANEL_COUNT; panel_z++) {
+            int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
-                pixel_t color = volume[z][voxel_2D.y][voxel_2D.x];
-                uint8_t r_ = !!(color & 0b100), g_ = !!(color & 0b010), b_ = !!(color & 0b001);
-                led_canvas_set_pixel(canvas, r, z, r_, g_, b_);
+                pixel_t color = volume[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
+                uint8_t r_ = (color & 0b100) ? 255 : 0;
+                uint8_t g_ = (color & 0b010) ? 255 : 0;
+                uint8_t b_ = (color & 0b001) ? 255 : 0;
+                led_canvas_set_pixel(canvas, r, panel_z, r_, g_, b_);
             }
         }
 

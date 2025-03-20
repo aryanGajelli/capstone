@@ -2,6 +2,7 @@
 #define __VOXEL_H__
 
 #include <stdint.h>
+#include <errno.h>
 
 #define PANEL_HEIGHT 64
 #define PANEL_WIDTH 128
@@ -11,7 +12,7 @@
 // measured in pixels. Note 1 pixel is 2mm wide
 #define PIXEL_WIDTH_MM 2.f
 #define PANEL_FRONT_OFFSET_MM 0     // likely 0 but should be experimentally determined
-#define PANEL_BACK_OFFSET_MM 25.37  // measured
+#define PANEL_BACK_OFFSET_MM -25.37  // measured
 
 #define PANEL_FRONT_OFFSET (PANEL_FRONT_OFFSET_MM / PIXEL_WIDTH_MM)
 #define PANEL_BACK_OFFSET (PANEL_BACK_OFFSET_MM / PIXEL_WIDTH_MM)
@@ -27,9 +28,24 @@ typedef uint8_t voxel_index_t;
 typedef uint16_t voxel_index_t;
 #endif
 
+
 typedef uint8_t pixel_t;  // RRRGGGBB is what we want but rn its 00000RGB
 
 extern pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
 void volume_draw_plane();
+
+static inline int panel_2_voxel_z(int panel_z) {
+    if (panel_z < PANEL_HEIGHT) {
+        return PANEL_HEIGHT - panel_z  - 1;
+    } else if (panel_z < PANEL_HEIGHT * 2) {
+        return PANEL_HEIGHT - (panel_z - PANEL_HEIGHT) - 1;
+    } else if (panel_z < PANEL_HEIGHT * 3) {
+        return PANEL_HEIGHT - (panel_z - PANEL_HEIGHT * 2) - 1;
+    } else {
+        perror("Invalid panel_z");
+        return -1;
+    }
+}
+
 #endif  // __VOXEL_H__

@@ -1,8 +1,10 @@
 #include "voxel.h"
+#include <stdio.h>
 
 pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
 void volume_draw_plane() {
+    printf("Filling cartesian volume buffer \n");
     for (int z = 0; z < VOXELS_Z; z++) {
         for (int y = 0; y < VOXELS_Y; y++) {
             for (int x = 0; x < VOXELS_X; x++) {
@@ -12,9 +14,12 @@ void volume_draw_plane() {
     }
 
     int plane_z = 10;
-    for (int y = 0; y < 50; y++) {
-        for (int x = 0; x < 50; x++) {
-            volume[plane_z][y][x] = 0b111;
+    for (int z = 10; z < 20; z++) {
+        for (int y = 0; y < 50; y++) {
+            for (int x = 0; x < 50; x++) {
+                volume[z][y + PANEL_WIDTH / 2][x + PANEL_WIDTH / 2] = 0b111;
+            }
         }
     }
+
 }
