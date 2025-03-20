@@ -13,9 +13,26 @@ pixel_t rgb_to_8bit(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void populate_volume(FILE* file) {
+    uint8_t max_x = 0;
+    uint8_t max_y = 0;
+
     uint8_t x, y, z, r, g, b;
+
+    // First pass through
     while (fscanf(file, "%hhd %hhd %hhd %hhd %hhd %hhd", &x, &y, &z, &r, &g, &b) != EOF) {
-        volume[z][y + PANEL_WIDTH / 2][x + PANEL_WIDTH / 2] = rgb_to_8bit(r, g, b);
+        if (x > max_x) {
+            max_x = x;
+        }
+        if (y > max_y) {
+            max_y = y;
+        }
+    }
+
+    // Go back to beginning of the file 
+    fseek(file, 0, SEEK_SET);
+
+    while (fscanf(file, "%hhd %hhd %hhd %hhd %hhd %hhd", &x, &y, &z, &r, &g, &b) != EOF) {
+        volume[z][y + PANEL_WIDTH / 2 - max_y][x + PANEL_WIDTH / 2 + max_x] = rgb_to_8bit(r, g, b);
     }
     fclose(file);
 }
