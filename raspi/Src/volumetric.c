@@ -13,7 +13,7 @@
 #include "voxel.h"
 
 #define NON_SET_PIXEL_US 100
-int volumetric_test(int argc, char **argv) {
+int volumetric_test(FILE *fptr) {
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
     struct RGBLedMatrix *matrix;
@@ -59,13 +59,6 @@ int volumetric_test(int argc, char **argv) {
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
-    // volume_draw_plane();
-    FILE *fptr = fopen("model_processing/Nissan/Nissan_GT-R.xyzrgb", "r");
-    if (fptr == NULL) {
-        fprintf(stderr, "Error! opening file");
-        // Program exits if the file pointer returns NULL.
-        return 1;
-    }
     populate_volume(fptr);
     // fclose(fptr);
     // volume_draw_plane();
