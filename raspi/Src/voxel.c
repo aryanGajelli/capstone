@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
@@ -12,7 +13,12 @@ pixel_t rgb_to_8bit(uint8_t r, uint8_t g, uint8_t b) {
     return (r_3bits << 5) | (g_3bits << 2) | b_2bits;
 }
 
+void reset_volume() {
+    memset(volume, 0, sizeof(volume));
+}
+
 void populate_volume(FILE* file) {
+    reset_volume();
     uint8_t max_x = 0;
     uint8_t max_y = 0;
 
@@ -28,18 +34,18 @@ void populate_volume(FILE* file) {
         }
     }
 
-    // Go back to beginning of the file 
+    // Go back to beginning of the file
     fseek(file, 0, SEEK_SET);
 
     while (fscanf(file, "%hhd %hhd %hhd %hhd %hhd %hhd", &x, &y, &z, &r, &g, &b) != EOF) {
-        volume[z][y + PANEL_WIDTH / 2 - max_y][x + PANEL_WIDTH / 2 + max_x] = rgb_to_8bit(r, g, b);
+        volume[z][y + PANEL_WIDTH / 2 - max_y / 2][x + PANEL_WIDTH / 2 - max_x / 2] = rgb_to_8bit(r, g, b);
     }
     fclose(file);
 }
 
 void volume_draw_plane() {
     printf("Filling cartesian volume buffer \n");
-    memset(volume, 0, sizeof(volume));
+    reset_volume();
 
     int side = 50;
     int offset_x = VOXELS_X / 2 - side / 2;
