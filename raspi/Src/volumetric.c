@@ -66,7 +66,9 @@ int volumetric_test(int argc, char **argv) {
         // Program exits if the file pointer returns NULL.
         return 1;
     }
-    populate_volume(fptr);
+    // populate_volume(fptr);
+    fclose(fptr);
+    volume_draw_plane();
     slicemap_init();
 
     // --------- Slicing Setup -----------
@@ -82,10 +84,7 @@ int volumetric_test(int argc, char **argv) {
         fprintf(stderr, "SET_PIXEL_MAX_TIME_US is 0\n");
         return 1;
     }
-    if (SET_PIXEL_MAX_TIME_US == 0) {
-        fprintf(stderr, "SET_PIXEL_MAX_TIME_US is 0\n");
-        return 1;
-    }
+
 
     int slice = 0;
     uint32_t start;
