@@ -1,0 +1,159 @@
+# Aspose.3D Wavefront OBJ Exporter
+# Copyright 2004-2025 Aspose Pty Ltd.
+# File created: 03/20/2025 04:59:55
+
+newmtl light
+	illum 2
+	Kd 0.19382916 0.19382916 0.19382916
+	Ke 0 0 0
+	Pr 0
+	Pm 0.44952518
+	d 1
+	Tr 0
+newmtl paint
+	illum 2
+	Kd 0.8556052 0.8556052 0.8556052
+	Ke 0 0 0
+	Pr 0.5260938
+	Pm 1
+	d 1
+	Tr 0
+newmtl chrome
+	illum 2
+	Kd 0.8 0.8 0.8
+	Ke 0 0 0
+	Pr 0
+	Pm 1
+	d 1
+	Tr 0
+newmtl mlack
+	illum 2
+	Kd 0 0 0
+	Ke 0 0 0
+	Pr 0.999077
+	Pm 0
+	d 1
+	Tr 0
+newmtl bumpa
+	illum 2
+	Kd 0.00041624127 0.00041624127 0.00041624127
+	Ke 0 0 0
+	Pr 0.60533214
+	Pm 0
+	d 1
+	Tr 0
+newmtl nlinka
+	illum 2
+	Kd 0.8 0.099966 0.00136641
+	Ke 0 0 0
+	Pr 0.9408021
+	Pm 0
+	d 1
+	Tr 0
+newmtl xenon
+	illum 2
+	Kd 0.0063702 0.0063702 0.0063702
+	Ke 0 0 0
+	Pr 0.9984396
+	Pm 0
+	d 1
+	Tr 0
+newmtl black
+	illum 2
+	Kd 0.0159949 0.0159949 0.0159949
+	Ke 0 0 0
+	Pr 0.99608207
+	Pm 0
+	d 1
+	Tr 0
+newmtl bhrome
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0.41028392
+	Pm 1
+	d 1
+	Tr 0
+newmtl glass_l
+	illum 2
+	Kd 0 0 0
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+newmtl glass
+	illum 2
+	Kd 0 0 0
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+newmtl brake
+	illum 2
+	Kd 0.21821019 0.00029950985 0
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+newmtl red2
+	illum 2
+	Kd 0.8 0.00116488 0
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+newmtl material
+	illum 2
+	Kd 0.30110568 0.0011051256 0
+	Ke 0 0 0
+	Pr 0
+	Pm 0
+	d 1
+	Tr 0
+newmtl tire_001
+	illum 2
+	Kd 0 0 0
+	Ke 0 0 0
+	Pr 0.88571393
+	Pm 0
+	d 1
+	Tr 0
+newmtl material_16
+	illum 2
+	Kd 0.25113288 0.25113288 0.25113288
+	Ke 0 0 0
+	Pr 0.4738948
+	Pm 1
+	d 1
+	Tr 0
+newmtl disc
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0.5260938
+	Pm 1
+	d 1
+	Tr 0
+	map_Kd disc_baseColor.jpg
+newmtl cali
+	illum 2
+	Kd 0.520996 0 0.0035829
+	Ke 0 0 0
+	Pr 0.45295072
+	Pm 1
+	d 1
+	Tr 0
+newmtl grill
+	illum 2
+	Kd 1 1 1
+	Ke 0 0 0
+	Pr 0.5382843
+	Pm 0.49219197
+	d 1
+	Tr 0
+	map_Kd grill_baseColor.jpg
+	norm grill_normal.jpg
