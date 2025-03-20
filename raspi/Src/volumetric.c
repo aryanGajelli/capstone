@@ -61,7 +61,7 @@ int volumetric_test(int argc, char **argv) {
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
     // volume_draw_plane();
-    FILE *fptr = fopen("model_processing/Tesla_Cybertruck/ct.xyzrgb", "r");
+    FILE *fptr = fopen("model_processing/Cube/cube.xyzrgb", "r");
     if (fptr == NULL) {
         fprintf(stderr, "Error! opening file");
         // Program exits if the file pointer returns NULL.
