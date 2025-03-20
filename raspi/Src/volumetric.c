@@ -12,6 +12,7 @@
 #include "slicemap.h"
 #include "voxel.h"
 
+#define TIME_FOR_NON_SET_PIXEL_US 100
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
@@ -65,15 +66,21 @@ int volumetric_test(int argc, char **argv) {
     const float rpm = 600;
     const float us_per_rev = 1e6 * 60 / rpm;
     const uint32_t us_per_slice = us_per_rev / SLICE_COUNT;  // Microseconds per slice
+    const uint32_t SET_PIXEL_MAX_TIME_US = us_per_slice - TIME_FOR_NON_SET_PIXEL_US > 0 ? us_per_slice - TIME_FOR_NON_SET_PIXEL_US : 0;
 
     bool rising_edge = false;
     bool falling_edge = false;
     printf("us/slice: %d\n", us_per_slice);
+    if (SET_PIXEL_MAX_TIME_US == 0) {
+        fprintf(stderr, "SET_PIXEL_MAX_TIME_US is 0\n");
+        return 1;
+    }
 
     int slice = 0;
     uint32_t start;
 
     uint32_t last_rising_edge = get_micros_counter();
+    int panel_z = 0;
     while (true) {
         start = get_micros_counter();
         // led_canvas_clear(canvas);
@@ -88,7 +95,7 @@ int volumetric_test(int argc, char **argv) {
             slice = SLICE_COUNT / 2;
         }
 
-        for (int panel_z = 0; panel_z < PANEL_HEIGHT * PANEL_COUNT; panel_z++) {
+        while (get_micros_counter() - start < us_per_slice - TIME_FOR_NON_SET_PIXEL_US) {
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
@@ -98,9 +105,9 @@ int volumetric_test(int argc, char **argv) {
                 uint8_t b_ = (color & 0b001) ? 255 : 0;
                 led_canvas_set_pixel(canvas, r, panel_z, r_, g_, b_);
             }
+            panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);
         }
 
-        slice = (slice + 1) % SLICE_COUNT;
         uint32_t duration_us = get_micros_counter() - start;
         if (duration_us > us_per_slice) {
             fprintf(stderr, "Slice took too long: %d\n", duration_us);
@@ -108,6 +115,7 @@ int volumetric_test(int argc, char **argv) {
         }
 
         usleep(us_per_slice - duration_us);
+        slice = (slice + 1) % SLICE_COUNT;
     }
 
     /*

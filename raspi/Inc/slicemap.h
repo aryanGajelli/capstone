@@ -4,7 +4,7 @@
 #include "mathc.h"
 #include "voxel.h"
 
-#define SLICE_COUNT 40
+#define SLICE_COUNT 128
 #define SLICE_QUADRANT (SLICE_COUNT / 4)
 #define SLICE_WRAP(slice) ((slice) % (SLICE_COUNT))
 #define SLICE_2_RAD(slice) ((slice) * (2 * MPI / SLICE_COUNT))
