@@ -12,8 +12,7 @@
 #include "slicemap.h"
 #include "voxel.h"
 
-#define TIME_FOR_NON_SET_PIXEL_US 100
-#define TIME_FOR_NON_SET_PIXEL_US 100
+#define NON_SET_PIXEL_US 100
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
@@ -74,7 +73,7 @@ int volumetric_test(int argc, char **argv) {
     const float rpm = 600;
     const float us_per_rev = 1e6 * 60 / rpm;
     const uint32_t us_per_slice = us_per_rev / SLICE_COUNT;  // Microseconds per slice
-    const uint32_t SET_PIXEL_MAX_TIME_US = us_per_slice - TIME_FOR_NON_SET_PIXEL_US > 0 ? us_per_slice - TIME_FOR_NON_SET_PIXEL_US : 0;
+    const uint32_t SET_PIXEL_MAX_TIME_US = us_per_slice - NON_SET_PIXEL_US > 0 ? us_per_slice - NON_SET_PIXEL_US : 0;
 
     bool rising_edge = false;
     bool falling_edge = false;
@@ -99,15 +98,15 @@ int volumetric_test(int argc, char **argv) {
         getRisingFallingPhoto(read_reg, &rising_edge, &falling_edge);
         if (rising_edge) {
             slice = 0;
-            uint32_t duration = get_micros_counter() - last_rising_edge;
-            printf("us/rev: %d, rpm: %.2f\n", duration, 1e6 * 60 / duration);
-            last_rising_edge = get_micros_counter();
+            uint32_t end = get_micros_counter();
+            printf("us/rev: %d, rpm: %.2f\n", end - last_rising_edge, 1e6 * 60 / (end - last_rising_edge));
+            last_rising_edge = end;
         }
         if (falling_edge) {
             slice = SLICE_COUNT / 2;
         }
 
-        while (get_micros_counter() - start < us_per_slice - TIME_FOR_NON_SET_PIXEL_US) {
+        while (get_micros_counter() - start < us_per_slice - NON_SET_PIXEL_US) {
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
@@ -118,7 +117,6 @@ int volumetric_test(int argc, char **argv) {
                 led_canvas_set_pixel(canvas, r, panel_z, r_, g_, b_);
             }
             panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);
-            panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);
         }
 
         uint32_t duration_us = get_micros_counter() - start;
@@ -128,7 +126,6 @@ int volumetric_test(int argc, char **argv) {
         }
 
         usleep(us_per_slice - duration_us);
-        slice = (slice + 1) % SLICE_COUNT;
         slice = (slice + 1) % SLICE_COUNT;
     }
 
