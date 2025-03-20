@@ -10,10 +10,9 @@
 
 // Horizontal offset of the panels from the true center plane of the rotating structure,
 // measured in pixels. Note 1 pixel is 2mm wide
-#define PANEL_2_PANEL_DIST_MM 25.37  // measured
 #define PIXEL_WIDTH_MM 2.f
-#define PANEL_FRONT_OFFSET_MM -5  // likely 0 but should be experimentally determined
-#define PANEL_BACK_OFFSET_MM (PANEL_2_PANEL_DIST_MM + PANEL_FRONT_OFFSET_MM)
+#define PANEL_FRONT_OFFSET_MM -20.37
+#define PANEL_BACK_OFFSET_MM  -5
 
 #define PANEL_FRONT_OFFSET (PANEL_FRONT_OFFSET_MM / PIXEL_WIDTH_MM)
 #define PANEL_BACK_OFFSET (PANEL_BACK_OFFSET_MM / PIXEL_WIDTH_MM)
