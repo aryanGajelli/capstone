@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
+
+#include "voxel.h"
+#include "slicemap.h"
 
 #include "gpio.h"
 
@@ -60,25 +64,14 @@ int volumetric_test(int argc, char **argv) {
 
     // --------- Slicing Setup -----------
     const float rpm = 600;
-    int num_slices = 128;
-    int slice = 0;
-    const float slice_to_rad = 2 * MPI / num_slices;
     const float us_per_rev = 1e6 * 60 / rpm;
-    const uint32_t us_per_slice = us_per_rev / num_slices;  // Microseconds per slice
-
-    // Angles that align with a square's diagonals
-    const float diag1 = num_slices / 8;  // 45 degrees
-    const float diag2 = diag1 * 3;
-    const float diag3 = diag1 * 5;
-    const float diag4 = diag1 * 7;
-
-    const int cube_width = 50;
-    const int cube_height = 50;
+    const uint32_t us_per_slice = us_per_rev / SLICE_COUNT;  // Microseconds per slice
 
     bool rising_edge = false;
     bool falling_edge = false;
     printf("us/slice: %d\n", us_per_slice);
 
+    int slice = 0;
     uint32_t start;
 
     uint32_t last_rising_edge = get_micros_counter();
@@ -93,34 +86,20 @@ int volumetric_test(int argc, char **argv) {
             last_rising_edge = get_micros_counter();
         }
         if (falling_edge) {
-            slice = num_slices / 2;
-        }
-        double angle = slice * slice_to_rad;
-        double width = 0;
-        // Calculate width of cube cross-section
-        // Adjust formula when crossing the cubes's diagonals
-        if ((diag1 < slice && slice < diag2) || (diag3 < slice && slice < diag4)) {
-            width = fabsf(cube_width / sinf(angle));
-        } else {
-            width = fabsf(cube_width / cosf(angle));
+            slice = SLICE_COUNT / 2;
         }
 
-        int offset_x = cols_per_panel/2 - width / 2;
-        int offset_y = (rows_per_panel - cube_height) / 2;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < cube_height; y++) {
-                led_canvas_set_pixel(canvas, x + offset_x , y + offset_y , 255, 255, 255);
+        for (int z = 0; z < PANEL_HEIGHT * 3; z++) {
+            int panel_index = z / PANEL_HEIGHT;
+            for (int r = 0; r < PANEL_WIDTH; r++) {
+                voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
+                pixel_t color = volume[z][voxel_2D.y][voxel_2D.x];
+                uint8_t r_ = !!(color&0b100), g_ = !!(color&0b010), b_ = !!(color&0b001);
+                led_canvas_set_pixel(canvas, r, z, r_, g_, b_);
             }
         }
 
-        // offset_x = 128 - width / 2;
-        offset_y = rows_per_panel  + (rows_per_panel - cube_height) / 2;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < cube_height; y++) {
-                led_canvas_set_pixel(canvas, x + offset_x, y + offset_y, 255, 255, 255);
-            }
-        }
-        slice = (slice + 1) % num_slices;
+        slice = (slice + 1) % SLICE_COUNT;
         uint32_t duration_us = get_micros_counter() - start;
         if (duration_us > us_per_slice)
             duration_us = 0;
