@@ -1,19 +1,20 @@
 #include "voxel.h"
 
 #include <stdio.h>
+#include <stdint.h>
 
 pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
-pixel_t rgb_to_8bit(unsigned char r, unsigned char g, unsigned char b) {
-    unsigned char r_3bits = (r7+127) / 255;
-    unsigned char g_3bits = (g7+127) / 255;
-    unsigned char b_2bits = (b3+127) / 255;
+pixel_t rgb_to_8bit(uint8_t r, uint8_t g, uint8_t b) {
+    uint8_t r_3bits = (r*7+127) / 255;
+    uint8_t g_3bits = (g*77+127) / 255;
+    uint8_t b_2bits = (b*3+127) / 255;
     return (r_3bits << 5) | (g_3bits << 2) | b_2bits;
 }
 
-void populate_volume(FILEfile) {
-    int x, y, z, r, g, b;
-    while (fscanf(file, "%d %d %d %d %d %d", &x, &y, &z, &r, &g, &b) != EOF) {
+void populate_volume(FILE* file) {
+    uint8_t x, y, z, r, g, b;
+    while (fscanf(file, "%hhd %hhd %hhd %hhd %hhd %hhd", &x, &y, &z, &r, &g, &b) != EOF) {
         volume[z][y + PANEL_WIDTH / 2][x + PANEL_WIDTH / 2] = rgb_to_8bit(r, g, b);
     }
     fclose(file);

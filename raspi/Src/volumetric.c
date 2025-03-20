@@ -60,14 +60,20 @@ int volumetric_test(int argc, char **argv) {
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
-    volume_draw_plane();
+    // volume_draw_plane();
+    FILE *fptr = fopen("model_processing/Tesla_Cybertruck/ct.xyzrgb", "r");
+    if (fptr == NULL) {
+        fprintf(stderr, "Error! opening file");
+        // Program exits if the file pointer returns NULL.
+        return 1;
+    }
+    populate_volume(fptr);
     slicemap_init();
 
     // --------- Slicing Setup -----------
     const float rpm = 600;
     const float us_per_rev = 1e6 * 60 / rpm;
     const uint32_t us_per_slice = us_per_rev / SLICE_COUNT;  // Microseconds per slice
-    const uint32_t SET_PIXEL_MAX_TIME_US = us_per_slice - TIME_FOR_NON_SET_PIXEL_US > 0 ? us_per_slice - TIME_FOR_NON_SET_PIXEL_US : 0;
     const uint32_t SET_PIXEL_MAX_TIME_US = us_per_slice - TIME_FOR_NON_SET_PIXEL_US > 0 ? us_per_slice - TIME_FOR_NON_SET_PIXEL_US : 0;
 
     bool rising_edge = false;
@@ -86,7 +92,6 @@ int volumetric_test(int argc, char **argv) {
     uint32_t start;
 
     uint32_t last_rising_edge = get_micros_counter();
-    int panel_z = 0;
     int panel_z = 0;
     while (true) {
         start = get_micros_counter();
@@ -107,9 +112,9 @@ int volumetric_test(int argc, char **argv) {
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
                 pixel_t color = volume[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
-                uint8_t r_ = (color & 0b100) ? 255 : 0;
-                uint8_t g_ = (color & 0b010) ? 255 : 0;
-                uint8_t b_ = (color & 0b001) ? 255 : 0;
+                uint8_t r_ = (color & 0b11100000) ? 255 : 0;
+                uint8_t g_ = (color & 0b00011100) ? 255 : 0;
+                uint8_t b_ = (color & 0b00000011) ? 255 : 0;
                 led_canvas_set_pixel(canvas, r, panel_z, r_, g_, b_);
             }
             panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);

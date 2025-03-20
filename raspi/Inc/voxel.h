@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define PANEL_HEIGHT 64
 #define PANEL_WIDTH 128
@@ -34,7 +35,7 @@ extern pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
 void volume_draw_plane();
 
-pixel_t rgb_to_8bit(unsigned char r, unsigned char g, unsigned char b);
+pixel_t rgb_to_8bit(uint8_t r, uint8_t g, uint8_t b);
 void populate_volume(FILE *file);
 
 static inline int panel_2_voxel_z(int panel_z) {
