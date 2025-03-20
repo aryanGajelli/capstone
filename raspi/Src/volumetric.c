@@ -3,15 +3,14 @@
 #include <led-matrix-c.h>
 #include <math.h>
 #include <mathc.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdbool.h>
-
-#include "voxel.h"
-#include "slicemap.h"
 
 #include "gpio.h"
+#include "slicemap.h"
+#include "voxel.h"
 
 int volumetric_test(int argc, char **argv) {
     struct RGBLedMatrixOptions options;
@@ -59,8 +58,8 @@ int volumetric_test(int argc, char **argv) {
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
-    const int rows_per_panel = 64;
-    const int cols_per_panel = 128;
+    volume_draw_plane();
+    slicemap_init();
 
     // --------- Slicing Setup -----------
     const float rpm = 600;
@@ -94,7 +93,7 @@ int volumetric_test(int argc, char **argv) {
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
                 pixel_t color = volume[z][voxel_2D.y][voxel_2D.x];
-                uint8_t r_ = !!(color&0b100), g_ = !!(color&0b010), b_ = !!(color&0b001);
+                uint8_t r_ = !!(color & 0b100), g_ = !!(color & 0b010), b_ = !!(color & 0b001);
                 led_canvas_set_pixel(canvas, r, z, r_, g_, b_);
             }
         }

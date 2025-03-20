@@ -30,4 +30,6 @@ typedef uint16_t voxel_index_t;
 typedef uint8_t pixel_t;  // RRRGGGBB is what we want but rn its 00000RGB
 
 extern pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
+
+void volume_draw_plane();
 #endif  // __VOXEL_H__

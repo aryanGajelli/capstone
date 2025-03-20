@@ -24,4 +24,6 @@ typedef struct {
 } voxel_2D_t;
 
 extern voxel_2D_t slice_map[SLICE_COUNT][PANEL_WIDTH][PANEL_COUNT];
+
+void slicemap_init();
 #endif  // __SLICEMAP_H__
