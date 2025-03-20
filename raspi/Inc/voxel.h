@@ -34,6 +34,9 @@ extern pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
 void volume_draw_plane();
 
+pixel_t rgb_to_8bit(unsigned char r, unsigned char g, unsigned char b);
+void populate_volume(FILE *file);
+
 static inline int panel_2_voxel_z(int panel_z) {
     if (panel_z < PANEL_HEIGHT) {
         return PANEL_HEIGHT - panel_z - 1;
