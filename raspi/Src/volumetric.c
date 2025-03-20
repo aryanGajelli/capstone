@@ -66,9 +66,9 @@ int volumetric_test(int argc, char **argv) {
         // Program exits if the file pointer returns NULL.
         return 1;
     }
-    // populate_volume(fptr);
-    fclose(fptr);
-    volume_draw_plane();
+    populate_volume(fptr);
+    // fclose(fptr);
+    // volume_draw_plane();
     slicemap_init();
 
     // --------- Slicing Setup -----------
