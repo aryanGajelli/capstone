@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "slicemap.h"
 #include "voxel.h"
+#include "buffer.h"
 
 #define NON_SET_PIXEL_US 100
 int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix) {
@@ -37,6 +38,9 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struc
 
     uint32_t last_rising_edge = get_micros_counter();
     int panel_z = 0;
+
+    pixel_t ***bufptr = (pixel_t***)getBuffer();
+
     while (true) {
         start = get_micros_counter();
         // led_canvas_clear(canvas);
@@ -55,7 +59,7 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struc
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
-                pixel_t color = volume[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
+                pixel_t color = bufptr[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
                 uint8_t r_ = ((color & 0b11100000) >> 5) > 0b111 / 2 ? 255 : 0;
                 uint8_t g_ = ((color & 0b00011100) >> 2) > 0b111 / 2 ? 255 : 0;
                 uint8_t b_ = (color & 0b00000011) > 0b11 / 2 ? 255 : 0;
