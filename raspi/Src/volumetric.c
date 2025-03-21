@@ -13,53 +13,7 @@
 #include "voxel.h"
 
 #define NON_SET_PIXEL_US 100
-int volumetric_test(FILE *fptr) {
-    struct RGBLedMatrixOptions options;
-    struct RGBLedRuntimeOptions rt_options;
-    struct RGBLedMatrix *matrix;
-    struct LedCanvas *offscreen_canvas;
-    int width, height;
-
-    memset(&options, 0, sizeof(options));
-    options.rows = 64;
-    options.cols = 128;
-    options.chain_length = 1;
-    options.parallel = 3;
-
-    options.hardware_mapping = "counter";
-    options.row_address_type = 5;
-
-    options.pwm_bits = 1;
-    options.pwm_dither_bits = 2;
-    options.pwm_lsb_nanoseconds = 20;
-
-    // options.show_refresh_rate = true;
-    options.disable_busy_waiting = true;
-
-    memset(&rt_options, 0, sizeof(rt_options));
-    rt_options.gpio_slowdown = 3;
-
-    volatile uint32_t *read_reg = NULL;
-    // init_photo(read_reg);
-
-    /* This supports all the led commandline options. Try --led-help */
-    matrix = led_matrix_create_from_ext(&options, &rt_options, &read_reg);
-    if (matrix == NULL)
-        return 1;
-
-    /* Let's do an example with double-buffering. We create one extra
-     * buffer onto which we draw, which is then swapped on each refresh.
-     * This is typically a good aproach for animations and such.
-     */
-    offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
-
-    led_canvas_get_size(offscreen_canvas, &width, &height);
-
-    struct LedCanvas *canvas = (struct LedCanvas *)matrix;
-
-    fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
-
-    populate_volume(fptr);
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
     // fclose(fptr);
     // volume_draw_plane();
     slicemap_init();
@@ -125,7 +79,6 @@ int volumetric_test(FILE *fptr) {
      * Make sure to always call led_matrix_delete() in the end to reset the
      * display. Installing signal handlers for defined exit is a good idea.
      */
-    led_matrix_delete(matrix);
 
     return 0;
 }

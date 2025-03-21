@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "led-matrix-c.h"
 
-int volumetric_test(FILE *fptr);
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg);
 #endif  // __VOLUMETRIC_H__

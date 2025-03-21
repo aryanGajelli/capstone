@@ -43,7 +43,7 @@ static inline int panel_2_voxel_z(int panel_z) {
         return PANEL_HEIGHT - panel_z - 1;
     } else if (panel_z < PANEL_HEIGHT * 2) {
         return PANEL_HEIGHT - (panel_z - PANEL_HEIGHT) - 1;
-    } else if (panel_z < PANEL_HEIGHT * 3) {
+    } else {
         return PANEL_HEIGHT * 2 - (panel_z - PANEL_HEIGHT * 2) - 1;
     }
 }

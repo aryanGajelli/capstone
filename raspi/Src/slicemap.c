@@ -38,8 +38,8 @@ void slicemap_init() {
                 double y_r = x_p * sin_angle + p_y;
 
                 // Convert rectangular coordinate to index
-                int index_x = clampf(x_r + PANEL_WIDTH / 2, 0, PANEL_WIDTH - 1);
-                int index_y = clampf(y_r + PANEL_WIDTH / 2, 0, PANEL_WIDTH - 1);
+                int index_x = clampi((int)round(x_r + PANEL_WIDTH / 2), 0, PANEL_WIDTH - 1);
+                int index_y = clampi((int)round(y_r + PANEL_WIDTH / 2), 0, PANEL_WIDTH - 1);
                 
                 slice_map[slice][i_w][panel] = (voxel_2D_t){index_x, index_y};
             }
