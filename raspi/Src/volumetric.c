@@ -15,9 +15,7 @@
 #include "voxel.h"
 
 static uint8_t a_speed = 1;
-static uint8_t z_speed = 1;
-static uint8_t a_div = 1;
-static uint8_t z_div = 1;
+static uint8_t z_speed = 3;
 static int16_t a_shift = 0;
 static int16_t z_shift = 0;
 
@@ -39,13 +37,13 @@ void *inputThread(void *data)
 	
 		switch (key) {
 		case KEY_LEFT:
-		  a_shift++; break;
+		  a_shift += a_speed; break;
 		case KEY_RIGHT:
-		  a_shift--; break;
+		  a_shift -= a_speed; break;
 		case KEY_UP:
-		  z_shift--; break;
+		  z_shift -= z_speed; break;
 		case KEY_DOWN:
-		  z_shift++; break;
+		  z_shift += z_speed; break;
 		}
 	
 		fflush(stdout);
@@ -105,7 +103,7 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         while (get_micros_counter() - start < us_per_slice - NON_SET_PIXEL_US) {
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
-                int a_adj = (slice + a_shift) / a_div;
+                int a_adj = (slice + a_shift);
                 if(a_adj > SLICE_COUNT){
                     a_adj -= SLICE_COUNT;
                 }
@@ -114,7 +112,7 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
                 }
                 voxel_2D_t voxel_2D = slice_map[a_adj][r][panel_index];
                 
-                int z_adj = (panel_2_voxel_z(panel_z) + z_shift) / z_div;
+                int z_adj = (panel_2_voxel_z(panel_z) + z_shift);
                 if(z_adj > VOXELS_Z){
                     z_adj -= VOXELS_Z;
                 }
