@@ -105,13 +105,13 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         while (get_micros_counter() - start < us_per_slice - NON_SET_PIXEL_US) {
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
-                int a_adj = slice;//(slice + a_shift) / a_div;
-                // if(a_adj > SLICE_COUNT){
-                //     a_adj -= SLICE_COUNT;
-                // }
-                // else if(a_adj < 0){
-                //     a_adj += SLICE_COUNT;
-                // }
+                int a_adj = (slice + a_shift) / a_div;
+                if(a_adj > SLICE_COUNT){
+                    a_adj -= SLICE_COUNT;
+                }
+                else if(a_adj < 0){
+                    a_adj += SLICE_COUNT;
+                }
                 voxel_2D_t voxel_2D = slice_map[a_adj][r][panel_index];
                 
                 int z_adj = (panel_2_voxel_z(panel_z) + z_shift) / z_div;
