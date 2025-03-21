@@ -91,6 +91,7 @@ int main() {
   memcpy(memptr, data, MESSAGE_LEN*sizeof(pixel_t));
   
   voxel_buffer_release(semptr);
+  printf("Released buffer\n");
 
   sleep(60);
 

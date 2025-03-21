@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "led-matrix-c.h"
+#include "voxel.h"
 
-int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix);
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix, pixel_t ***bufptr);
 #endif  // __VOLUMETRIC_H__

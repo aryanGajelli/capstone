@@ -11,6 +11,7 @@
 #include "slicemap.h"
 #include "volumetric.h"
 #include "voxel.h"
+#include "buffer.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -25,6 +26,7 @@ int main(int argc, char **argv) {
     }
 
     populate_volume(fptr);
+    pixel_t ***bufptr = (pixel_t ***)getBuffer();
 
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
@@ -72,7 +74,7 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
-    int r_val = volumetric_test(offscreen_canvas, read_reg, matrix);
+    int r_val = volumetric_test(offscreen_canvas, read_reg, matrix, bufptr);
     led_matrix_delete(matrix);
 
     return r_val;

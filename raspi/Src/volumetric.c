@@ -14,7 +14,7 @@
 #include "buffer.h"
 
 #define NON_SET_PIXEL_US 100
-int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix) {
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix, pixel_t ***bufptr) {
     // fclose(fptr);
     // volume_draw_plane();
     slicemap_init();
@@ -39,7 +39,7 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struc
     uint32_t last_rising_edge = get_micros_counter();
     int panel_z = 0;
 
-    pixel_t ***bufptr = (pixel_t***)getBuffer();
+
 
     while (true) {
         start = get_micros_counter();
