@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
 
     led_canvas_get_size(offscreen_canvas, &width, &height);
 
-    struct LedCanvas *canvas = (struct LedCanvas *)matrix;
+    // struct LedCanvas *canvas = (struct LedCanvas *)matrix;
 
     fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n", width, height, options.hardware_mapping);
 
-    int r_val = volumetric_test(canvas, read_reg);
+    int r_val = volumetric_test(offscreen_canvas, read_reg, matrix);
     led_matrix_delete(matrix);
 
     return r_val;

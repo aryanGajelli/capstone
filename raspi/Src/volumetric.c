@@ -13,7 +13,7 @@
 #include "voxel.h"
 
 #define NON_SET_PIXEL_US 100
-int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBMatrix *matrix) {
     // fclose(fptr);
     // volume_draw_plane();
     slicemap_init();
@@ -64,6 +64,7 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
             panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);
         }
 
+        canvas = led_matrix_swap_on_vsync(matrix, canvas);
         uint32_t duration_us = get_micros_counter() - start;
         if (duration_us > us_per_slice) {
             fprintf(stderr, "Slice took too long: %d\n", duration_us);
