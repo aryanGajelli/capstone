@@ -32,7 +32,6 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         return 1;
     }
 
-
     int slice = 0;
     uint32_t start;
 
@@ -57,10 +56,10 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
             for (int r = 0; r < PANEL_WIDTH; r++) {
                 voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
                 pixel_t color = volume[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
-                uint8_t r_ = ((color & 0b11100000) >> 5) > 0b111/2 ? 255 : 0;
-                uint8_t g_ = ((color & 0b00011100) >> 2) > 0b111/2 ? 255 : 0;
-                uint8_t b_ = (color & 0b00000011) > 0b11/2 ? 255 : 0;
-                led_canvas_set_pixel(offscreen_canvas, r, panel_z, r_, g_, b_);
+                uint8_t r_ = ((color & 0b11100000) >> 5) > 0b111 / 2 ? 255 : 0;
+                uint8_t g_ = ((color & 0b00011100) >> 2) > 0b111 / 2 ? 255 : 0;
+                uint8_t b_ = (color & 0b00000011) > 0b11 / 2 ? 255 : 0;
+                led_canvas_set_pixel(canvas, r, panel_z, r_, g_, b_);
             }
             panel_z = (panel_z + 1) % (PANEL_HEIGHT * PANEL_COUNT);
         }
