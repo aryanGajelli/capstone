@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "gpio.h"
 #include "led-matrix-c.h"
@@ -12,19 +13,37 @@
 #include "volumetric.h"
 #include "voxel.h"
 
+static FILE *fptr;
+
+void *writerThread(void *data)
+{
+    char *name = (char*)data;
+ 
+    printf("Hi from thread name = %s\n", name);
+    
+    populate_volume(fptr);
+ 
+    printf("Thread %s done!\n", name);
+    return NULL;
+}
+
 int main(int argc, char **argv) {
+
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <volume_file.xyzrgb>\n", argv[0]);
         return 1;
     }
 
-    FILE *fptr = fopen(argv[1], "r");
+    fptr = fopen(argv[1], "r");
     if (fptr == NULL) {
         fprintf(stderr, "Error opening file\n");
         return 1;
     }
 
-    populate_volume(fptr);
+    pthread_t th_writer;
+    pthread_create(&th_writer, NULL, writerThread, "writer_thread");
+
+    // populate_volume(fptr);
 
     struct RGBLedMatrixOptions options;
     struct RGBLedRuntimeOptions rt_options;
