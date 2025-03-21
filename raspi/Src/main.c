@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -6,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sched.h>
 
 #include "gpio.h"
 #include "led-matrix-c.h"
@@ -15,8 +18,23 @@
 
 static FILE *fptr;
 
+int stick_thread_to_core(int core_id) {
+    int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    if (core_id < 0 || core_id >= num_cores)
+       return EINVAL;
+ 
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core_id, &cpuset);
+ 
+    pthread_t current_thread = pthread_self();    
+    return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
+}
+
 void *writerThread(void *data)
 {
+    stick_thread_to_core(1);
+
     char *name = (char*)data;
  
     printf("Hi from thread name = %s\n", name);
