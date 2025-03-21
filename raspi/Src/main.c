@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     options.pwm_dither_bits = 2;
     options.pwm_lsb_nanoseconds = 20;
 
-    options.led_rgb_sequence = "BGR";
+    options.led_rgb_sequence = "BRG";
     // options.show_refresh_rate = true;
     options.disable_busy_waiting = true;
 
