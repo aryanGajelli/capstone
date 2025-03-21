@@ -7,10 +7,56 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ncurses.h>
+#include <pthread.h>
 
 #include "gpio.h"
 #include "slicemap.h"
 #include "voxel.h"
+
+static uint8_t a_speed = 1;
+static uint8_t z_speed = 1;
+static uint8_t a_div = 1;
+static uint8_t z_div = 1;
+static int16_t a_shift = 0;
+static int16_t z_shift = 0;
+
+void *inputThread(void *data)
+{
+    char *name = (char*)data;
+ 
+    printf("Hi from thread name = %s\n", name);
+    
+	int key = 0;
+	while(true) {
+		usleep(100000);
+		key = getch();
+	
+		// skip buffered repeats                                                                                     
+		if (key != ERR) {
+		  while (getch() == key);
+		}
+		else {
+		  printf("_ ");
+		}
+	
+		switch (key) {
+		case KEY_LEFT:
+		  a_shift++; break;
+		case KEY_RIGHT:
+		  a_shift--; break;
+		case KEY_UP:
+		  z_shift--; break;
+		case KEY_DOWN:
+		  z_shift++; break;
+		}
+	
+		fflush(stdout);
+    }
+ 
+    printf("Thread %s done!\n", name);
+    return NULL;
+}
 
 #define NON_SET_PIXEL_US 100
 int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
@@ -31,6 +77,14 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         fprintf(stderr, "SET_PIXEL_MAX_TIME_US is 0\n");
         return 1;
     }
+    
+    initscr();
+    noecho();
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
+
+    pthread_t th_input;
+    pthread_create(&th_input, NULL, inputThread, "input_thread");
 
     int slice = 0;
     uint32_t start;
@@ -54,8 +108,24 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         while (get_micros_counter() - start < us_per_slice - NON_SET_PIXEL_US) {
             int panel_index = panel_z / PANEL_HEIGHT;
             for (int r = 0; r < PANEL_WIDTH; r++) {
-                voxel_2D_t voxel_2D = slice_map[slice][r][panel_index];
-                pixel_t color = volume[panel_2_voxel_z(panel_z)][voxel_2D.y][voxel_2D.x];
+                int a_adj = (slice + a_shift) / a_div;
+                if(a_adj > SLICE_COUNT){
+                    a_adj -= SLICE_COUNT;
+                }
+                else if(a_adj < 0){
+                    a_adj += SLICE_COUNT;
+                }
+                voxel_2D_t voxel_2D = slice_map[slice + a_shift][r][panel_index];
+                
+                int z_adj = (panel_2_voxel_z(panel_z) + z_shift) / z_div;
+                if(z_adj > VOXELS_Z){
+                    z_adj -= VOXELS_Z;
+                }
+                else if(z_adj < 0){
+                    z_adj += VOXELS_Z;
+                }
+                pixel_t color = volume[z_adj][voxel_2D.y][voxel_2D.x];
+
                 uint8_t r_ = ((color & 0b11100000) >> 5) > 0b111 / 2 ? 255 : 0;
                 uint8_t g_ = ((color & 0b00011100) >> 2) > 0b111 / 2 ? 255 : 0;
                 uint8_t b_ = (color & 0b00000011) > 0b11 / 2 ? 255 : 0;
@@ -73,6 +143,8 @@ int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg) {
         usleep(us_per_slice - duration_us);
         slice = (slice + 1) % SLICE_COUNT;
     }
+    
+    endwin();
 
     /*
      * Make sure to always call led_matrix_delete() in the end to reset the
