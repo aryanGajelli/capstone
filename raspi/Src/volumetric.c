@@ -13,7 +13,7 @@
 #include "voxel.h"
 
 #define NON_SET_PIXEL_US 100
-int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBMatrix *matrix) {
+int volumetric_test(struct LedCanvas *canvas, volatile uint32_t *read_reg, struct RGBLedMatrix *matrix) {
     // fclose(fptr);
     // volume_draw_plane();
     slicemap_init();
