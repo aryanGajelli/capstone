@@ -21,7 +21,8 @@ void *writerThread(void *data)
  
     printf("Hi from thread name = %s\n", name);
     
-    populate_volume(fptr);
+    // populate_volume(fptr);
+    volume_draw_continuous();
  
     printf("Thread %s done!\n", name);
     return NULL;

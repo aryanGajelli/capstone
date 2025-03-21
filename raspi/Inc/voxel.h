@@ -35,6 +35,8 @@ extern pixel_t volume[VOXELS_Z][VOXELS_Y][VOXELS_X];
 
 void volume_draw_plane();
 
+void volume_draw_continuous();
+
 pixel_t rgb_to_8bit(uint8_t r, uint8_t g, uint8_t b);
 void populate_volume(FILE *file);
 

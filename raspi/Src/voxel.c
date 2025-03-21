@@ -58,3 +58,22 @@ void volume_draw_plane() {
         }
     }
 }
+
+volume_draw_continuous() {
+    while(1) {
+        printf("Filling cartesian volume buffer \n");
+        reset_volume();
+
+        int side = 50;
+        int offset_x = VOXELS_X / 2 - side / 2;
+        int offset_y = VOXELS_Y / 2 - side / 2;
+        for (int z = 10; z < 20; z++) {
+            for (int y = 0; y < 50; y++) {
+                for (int x = 0; x < 50; x++) {
+                    volume[z][y + offset_y][x + offset_x] = 0xff;
+                }
+            }
+        }
+        sleep(1);
+    }
+}
